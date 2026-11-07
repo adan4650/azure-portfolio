@@ -1,0 +1,148 @@
+.vault-intro {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  z-index: 100;
+  overflow: hidden;
+  isolation: isolate;
+  background: transparent;
+  color: #f7f1df;
+  font-family: inherit;
+}
+
+.vault-intro__scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The explicit scene clock owns geometry; implicit CSS transitions would restart on every frame. */
+.vault-intro__scene,
+.vault-intro__scene * {
+  transition: none !important;
+  animation: none !important;
+}
+
+.vault-intro__topline {
+  position: absolute;
+  z-index: 4;
+  top: clamp(22px, 3.7vw, 48px);
+  right: clamp(20px, 4.2vw, 64px);
+  left: clamp(20px, 4.2vw, 64px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+}
+
+.vault-intro__controls { display: flex; align-items: center; gap: clamp(16px, 2.5vw, 36px); }
+.vault-intro__controls button {
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #f7f1df;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 8px 0;
+}
+
+.vault-intro__controls button:focus-visible {
+  outline: 2px solid #ffda3a;
+  outline-offset: 6px;
+}
+
+.vault-intro__controls button:hover { color: #ffda3a; }
+.vault-intro__sound { display: flex; align-items: center; gap: 8px; }
+
+.vault-intro__vault-button {
+  position: absolute;
+  z-index: 3;
+  top: 48%;
+  left: 50%;
+  width: max(26.7vw, 42.7vh);
+  aspect-ratio: 1;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: 50%;
+  outline: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.vault-intro__focus-ring {
+  position: absolute;
+  inset: -13px;
+  display: block;
+  border: 2px solid transparent;
+  border-radius: inherit;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.vault-intro__vault-button:hover .vault-intro__focus-ring { border-color: #ffda3a66; }
+.vault-intro__vault-button:focus-visible .vault-intro__focus-ring {
+  border-color: #ffda3a;
+  box-shadow: 0 0 0 7px #ffda3a13;
+}
+
+.vault-intro__hint {
+  position: absolute;
+  z-index: 4;
+  bottom: clamp(28px, 5.8vh, 66px);
+  right: 24px;
+  left: 24px;
+  display: flex;
+  min-height: 65px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+  pointer-events: none;
+}
+
+.vault-intro__hint-line { height: 23px; width: 1px; margin-bottom: 12px; background: #ffda3a; }
+.vault-intro__hint p { margin: 0; color: #fff5dc; font-size: clamp(14px, 1.15vw, 17px); font-weight: 600; letter-spacing: 0.015em; }
+.vault-intro__hint p span { display: inline-block; margin-left: 8px; color: #ffda3a; font-size: 18px; }
+.vault-intro__hint-detail { margin-top: 7px; color: #ada6b9; font-size: 10px; letter-spacing: 0.025em; }
+.vault-intro__skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 7px 10px;
+  border: 1px solid #ffda3a40;
+  border-radius: 3px;
+  background: #060606;
+  color: #ffda3a;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.vault-intro__skip span { color: #ffda3a; font-size: 16px; line-height: 1; }
+.vault-intro__skip:hover { border-color: #ffda3a; background: #1b1910; }
+.vault-intro__skip:focus-visible { outline: 2px solid #ffda3a; outline-offset: 4px; }
+
+@media (max-aspect-ratio: 4/5) {
+  .vault-intro__vault-button { top: 45%; width: min(60vw, 36vh); }
+  .vault-intro__hint { bottom: 13%; }
+  .vault-intro__topline { top: max(24px, env(safe-area-inset-top)); }
+  .vault-intro__controls { gap: 20px; }
+  .vault-intro__sound span { display: none; }
+  .vault-intro__controls button { padding: 10px 0; }
+}
+
+@media (max-height: 520px) and (min-aspect-ratio: 4/5) {
+  .vault-intro__topline { top: 15px; }
+  .vault-intro__hint { bottom: 16px; min-height: 30px; }
+  .vault-intro__hint-line, .vault-intro__hint-detail { display: none; }
+  .vault-intro__hint p { font-size: 12px; }
+}
+
+:root:has(.vault-intro) {
+  background-color: var(--vault-intro-gutter, #000);
+  transition: none !important;
+}
