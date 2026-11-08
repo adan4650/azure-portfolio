@@ -32,7 +32,14 @@ export default function VideoCard({ video, featured = false }: { video: Portfoli
       <div className="video-card__copy">
         <p className="eyebrow">{video.project}</p>
         <h3>{video.title}</h3>
-        <p>{video.description}</p>
+        <p>
+          {video.description}
+          {video.media.type === 'youtube' && (
+            <a className="mt-4 flex w-fit items-center gap-2 text-[var(--yellow)] hover:underline" href={`https://www.youtube.com/watch?v=${encodeURIComponent(video.media.videoId)}`} target="_blank" rel="noreferrer">
+              Watch on YouTube <ArrowUpRight className="size-4" /><span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          )}
+        </p>
       </div>
     </article>
   )

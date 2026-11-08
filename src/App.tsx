@@ -25,7 +25,7 @@ function Header() {
   }, [menuOpen])
 
   const closeMenu = () => setMenuOpen(false)
-  const isProjects = location.pathname === '/' && location.hash === '#projects'
+  const isProjects = location.pathname === '/' && (location.hash === '#projects' || location.hash.startsWith('#project-'))
 
   return (
     <header className="site-header section-shell">

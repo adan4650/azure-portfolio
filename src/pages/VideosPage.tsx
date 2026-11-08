@@ -9,7 +9,7 @@ export default function VideosPage() {
       <section className="videos-heading" aria-labelledby="videos-heading" data-reveal>
         <p className="eyebrow">The learning, documented.</p>
         <h1 id="videos-heading">Behind the build<span className="yellow-period">.</span></h1>
-        <p>Project walkthroughs, decisions, and lessons from my journey into the cloud.</p>
+        <p>After each build, I turn my notes into a walkthrough: the business problem, the architecture, the struggles and decisions, and what I’d change at production scale.</p>
       </section>
       {videos.length > 0 ? (
         <section className="video-library-grid" aria-label="Project videos" data-reveal>

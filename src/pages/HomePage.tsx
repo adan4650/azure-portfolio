@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight, VideoIcon } from '../components/Icons'
-import VideoCard from '../components/VideoCard'
-import { credentials, currentProject, profile, videos } from '../data/portfolio'
+import ProjectJourney from '../components/ProjectJourney'
+import LearningApproach from '../components/LearningApproach'
+import { credentials, profile } from '../data/portfolio'
 import './homepage.css'
 
 const credentialGroups = ['Education', 'Certification', 'Experience'].map((label) => ({
@@ -58,44 +59,11 @@ export default function HomePage() {
         </div>
       </section>
       <div className="arcade-divider section-shell" aria-hidden="true"><span /><i /><i /><i /><span /></div>
-      <section id="projects" className="arcade-projects section-shell" aria-labelledby="projects-heading">
-        <div className="arcade-section-heading" data-reveal>
-          <div><p className="arcade-eyebrow">01 / The build log</p><h2 id="projects-heading">New challenges.<br /><span>Real projects.</span></h2></div>
-          <p>Learning by doing, one build at a time. This portfolio is my first step into the cloud.</p>
-        </div>
-        <div className="arcade-project-grid">
-          <article className="mission-build" aria-labelledby="project-heading" data-reveal>
-            <div className="mission-build__topline"><span>Current mission</span><span className="arcade-project-status"><span aria-hidden="true" /> {currentProject.status}</span></div>
-            <div className="mission-build__content">
-              <div className="mission-build__number" aria-hidden="true">01</div>
-              <h3 id="project-heading">{currentProject.title}</h3>
-              <p className="mission-build__description">{currentProject.description}</p>
-              <p className="mission-build__summary">{currentProject.summary}</p>
-              <div className="mission-build__next">
-                <h4>Next steps</h4>
-                <ol>{currentProject.upcoming.map((item, index) => <li key={item}><span className="mission-build__step-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><span>{item}</span></li>)}</ol>
-              </div>
-              <a className="arcade-text-link" href={profile.repositoryUrl} target="_blank" rel="noreferrer">Follow the build on GitHub <ArrowUpRight /><span className="sr-only"> (opens in a new tab)</span></a>
-            </div>
-            <div className="mission-build__platform"><span className="arcade-pixel" aria-hidden="true" /> Built to learn. Documented as I go.</div>
-          </article>
-          <div className="arcade-featured-video" data-reveal>
-            {videos.length > 0 ? <VideoCard video={videos[0]} featured /> : (
-              <div className="arcade-video-placeholder" role="group" aria-labelledby="walkthrough-title">
-                <div className="arcade-video-placeholder__bar"><span>Behind the build</span><span aria-hidden="true">[ + ]</span></div>
-                <div className="arcade-video-placeholder__screen">
-                  <div className="arcade-video-placeholder__graphic" aria-hidden="true"><div className="arcade-video-pixels"><i /><i /><i /><i /></div><VideoIcon /><span>Azure Portfolio</span></div>
-                  <p id="walkthrough-title">Video coming soon<span aria-hidden="true">_</span></p>
-                  <span className="arcade-video-placeholder__caption">The steps. The troubleshooting. The lessons.</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+      <ProjectJourney />
+      <LearningApproach />
       <section className="arcade-library section-shell" aria-labelledby="library-heading" data-reveal>
         <div className="arcade-library__icon" aria-hidden="true"><VideoIcon /></div>
-        <div><p className="arcade-eyebrow">02 / Video library</p><h2 id="library-heading">Every build has a story.</h2><p className="arcade-library__description">Walkthroughs, decisions, and what I learn along the way.</p></div>
+        <div><p className="arcade-eyebrow">04 / Video library</p><h2 id="library-heading">Every build has a story.</h2><p className="arcade-library__description">Recorded after the build: the struggles, the decisions, and what I’d change at production scale.</p></div>
         <Link className="arcade-button arcade-button--secondary" to="/videos">View all videos <ArrowUpRight /></Link>
       </section>
     </div>
