@@ -1,0 +1,45 @@
+.build-journal {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: clamp(35px, 6vw, 85px);
+  padding-block: 42px 55px;
+  border-top: 1px solid var(--arcade-line);
+}
+.build-journal__intro .arcade-eyebrow { margin-bottom: 15px; }
+.build-journal h2 { font-size: clamp(28px, 3vw, 40px); font-weight: 750; line-height: 1.15; letter-spacing: -.045em; margin: 0 0 23px; }
+.build-journal h2 span { color: #b999cd; }
+.build-journal__intro > p:not(.arcade-eyebrow) { color: #c5b1d0; font-size: 13px; line-height: 1.85; margin: 0 0 16px; }
+.build-journal__process { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 11px; color: var(--yellow); font: 10px/1.7 var(--arcade-mono); }
+.build-journal__process svg { width: 14px; height: 14px; color: #a985bf; flex-shrink: 0; }
+.build-journal__sections { padding: 0; margin: 0; list-style: none; }
+.build-journal__sections li { display: flex; gap: 19px; padding-block: 20px; border-bottom: 1px solid var(--arcade-line); }
+.build-journal__sections li:first-child { padding-top: 0; }
+.build-journal__sections li:last-child { padding-bottom: 0; border-bottom: 0; }
+.build-journal__number { color: var(--yellow); font: 12px/1.7 var(--arcade-mono); flex-shrink: 0; }
+.build-journal__sections h3 { font-size: 15px; font-weight: 650; line-height: 1.5; margin: 0 0 7px; }
+.build-journal__sections p { font-size: 12px; line-height: 1.8; color: #bda6cc; margin: 0; }
+.certification-path { display: grid; grid-template-columns: 1fr 1.15fr; align-items: center; gap: clamp(35px, 6vw, 85px); padding-block: 35px 45px; border-top: 1px solid var(--arcade-line); scroll-margin-top: 30px; }
+.certification-path__heading .arcade-eyebrow { margin-bottom: 12px; }
+.certification-path h2 { font-size: clamp(24px, 2.5vw, 32px); line-height: 1.2; letter-spacing: -.035em; font-weight: 700; margin: 0 0 14px; }
+.certification-path__heading > p:last-child { margin: 0; color: #c5b1d0; font-size: 12px; line-height: 1.8; }
+.certification-path__stages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; padding: 0; margin: 0; }
+.certification-path__stages li { position: relative; min-width: 0; padding-top: 42px; }
+.certification-path__stages li:not(:last-child)::before { position: absolute; left: 13px; top: 13px; width: 100%; border-top: 1px dashed #86639d; content: ''; }
+.certification-path__marker { position: absolute; top: 0; left: 0; display: grid; place-items: center; width: 27px; height: 27px; color: #c0a1d0; border: 1px solid #a27aba; background: #241030; }
+.certification-path__marker > span { display: block; width: 5px; height: 5px; background: #9c78b2; }
+.certification-path__marker svg { width: 19px; height: 19px; }
+.certification-path__stage--complete .certification-path__marker { color: var(--yellow); border-color: var(--yellow); }
+.certification-path__status { color: #bda6cc; font: 9px/1.7 var(--arcade-mono); letter-spacing: .05em; text-transform: uppercase; }
+.certification-path__stage--complete .certification-path__status { color: var(--yellow); }
+.certification-path__stages h3 { margin: 7px 0 5px; font-size: clamp(17px, 1.8vw, 24px); font-weight: 750; letter-spacing: -.03em; line-height: 1.2; }
+.certification-path__stages p { padding-right: 10px; margin: 0; color: #bda6cc; font-size: 10px; line-height: 1.6; }
+
+@media (max-width: 900px) {
+  .build-journal, .certification-path { gap: 32px; }
+}
+@media (max-width: 720px) {
+  .build-journal, .certification-path { grid-template-columns: minmax(0, 1fr); padding-block: 30px 35px; }
+  .build-journal__sections li { gap: 15px; }
+  .certification-path__stages { gap: 8px; }
+  .certification-path__stages li:not(:last-child)::before { width: calc(100% + 8px); }
+}
