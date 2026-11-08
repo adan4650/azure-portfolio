@@ -71,7 +71,7 @@ Each stage builds on the previous one: provision the environment, observe its be
 
 ### Certification goals after the projects
 
-CompTIA Security+ is earned. AZ-104 and AZ-900 are planned goals after these builds; AZ-900 replaces the earlier AZ-500 target.
+CompTIA Security+ is earned. AZ-900 comes next, followed by AZ-104, after these builds.
 
 ### Run locally
 

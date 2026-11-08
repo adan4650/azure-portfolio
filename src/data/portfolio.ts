@@ -15,8 +15,8 @@ export const credentials = [
 
 export const certificationGoals = [
   { title: 'Security+', description: 'CompTIA', status: 'Earned', complete: true },
-  { title: 'AZ-104', description: 'Azure Administrator', status: 'Planned', complete: false },
   { title: 'AZ-900', description: 'Azure Fundamentals', status: 'Planned', complete: false },
+  { title: 'AZ-104', description: 'Azure Administrator', status: 'Planned', complete: false },
 ]
 
 export const currentProject = {

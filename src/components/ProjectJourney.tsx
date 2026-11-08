@@ -55,7 +55,6 @@ export default function ProjectJourney() {
     <section id="projects" className="arcade-projects section-shell" aria-labelledby="projects-heading">
       <div className="arcade-section-heading" data-reveal>
         <div><p className="arcade-eyebrow">01 / The learning path</p><h2 id="projects-heading">One build.<br /><span>The next level.</span></h2></div>
-        <p>Every project starts where the last one ends. Follow my path into the cloud, from this website to what comes next.</p>
       </div>
 
       <div className="journey-map" data-reveal>
