@@ -8,3 +8,4 @@ work/
 !.env.example
 .DS_Store
 Thumbs.db
+functions/local.settings.json

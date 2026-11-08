@@ -34,7 +34,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build website
+        # The public form stays disabled until the production API is ready.
         run: pnpm run build
+        env:
+          VITE_TURNSTILE_SITE_KEY: ${{ github.event_name == 'push' && vars.VITE_TURNSTILE_SITE_KEY || '' }}
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1

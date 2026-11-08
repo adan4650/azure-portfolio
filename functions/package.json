@@ -1,0 +1,22 @@
+{
+  "name": "portfolio-contact-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "build": "tsc",
+    "test": "pnpm run build && node --test test/*.test.mjs",
+    "start": "pnpm run build && func start"
+  },
+  "dependencies": {
+    "@azure/data-tables": "^13.3.0",
+    "@azure/functions": "^4.7.0",
+    "@azure/identity": "^4.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.3"
+  }
+}

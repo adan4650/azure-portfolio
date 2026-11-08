@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "FUNCTIONS_REQUEST_BODY_SIZE_LIMIT": "32768",
+    "TURNSTILE_SECRET_KEY": "",
+    "TURNSTILE_HOSTNAMES": "localhost,127.0.0.1",
+    "CONTACT_TABLE_ENDPOINT": ""
+  }
+}
