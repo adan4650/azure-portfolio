@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import gsap from 'gsap'
-import VaultIntro from './components/VaultIntro'
-import { ArrowRight, ArrowUpRight, ReplayIcon } from './components/Icons'
+import { ArrowRight, ArrowUpRight } from './components/Icons'
 import HomePage from './pages/HomePage'
 import VideosPage from './pages/VideosPage'
 import ContactPage from './pages/ContactPage'
@@ -52,32 +51,13 @@ function NotFoundPage() {
 }
 
 export default function App() {
-  const [introVisible, setIntroVisible] = useState(true)
-  const [introKey, setIntroKey] = useState(0)
   const siteRef = useRef<HTMLDivElement>(null)
   const mainRef = useRef<HTMLElement>(null)
-  const introHasCompleted = useRef(false)
   const location = useLocation()
   const lastRevealedPath = useRef(location.pathname)
 
-  const completeIntro = useCallback(() => {
-    introHasCompleted.current = true
-    setIntroVisible(false)
-  }, [])
-
-  const replayIntro = () => {
-    // The page is already in its final position when it appears through the hood.
-    window.scrollTo({ top: 0, behavior: 'instant' })
-    setIntroKey((key) => key + 1)
-    setIntroVisible(true)
-  }
-
   useLayoutEffect(() => {
-    if (introVisible) {
-      lastRevealedPath.current = location.pathname
-      return
-    }
-    // The entrance reveals this mounted content directly; only later route changes animate.
+    // Show the first page immediately; only later route changes animate.
     if (lastRevealedPath.current === location.pathname) return
     lastRevealedPath.current = location.pathname
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -85,7 +65,7 @@ export default function App() {
       if (!reduceMotion) gsap.from('[data-reveal]', { opacity: 0, y: 20, duration: 0.8, stagger: 0.08, ease: 'power2.out', clearProps: 'all' })
     }, siteRef)
     return () => context.revert()
-  }, [introVisible, location.pathname])
+  }, [location.pathname])
 
   useEffect(() => {
     const title = location.pathname === '/contact' ? 'Contact | Andre Daniels Jr.' : location.pathname === '/videos' ? 'Videos | Andre Daniels Jr.' : 'Andre Daniels Jr. | Cloud Portfolio'
@@ -101,13 +81,12 @@ export default function App() {
   }, [location])
 
   useEffect(() => {
-    if (introVisible || !introHasCompleted.current) return
     mainRef.current?.focus({ preventScroll: true })
-  }, [introVisible, location.pathname])
+  }, [location.pathname])
 
   return (
     <>
-      <div className={`site ${introVisible ? 'site--intro-active' : ''}`} ref={siteRef} inert={introVisible} aria-hidden={introVisible || undefined}>
+      <div className="site" ref={siteRef}>
         <a className="skip-link" href="#main-content">Skip to content</a>
         <div className="ambient-background" aria-hidden="true"><div className="cloud-haze cloud-haze--left" /><div className="cloud-haze cloud-haze--right" /><div className="cloud-haze cloud-haze--bottom" /><svg className="cloud-trace" viewBox="0 0 1440 880" preserveAspectRatio="none"><path d="M-40 750c72-118 154-100 206-36 40-44 89-43 145 2M490 90c45-77 129-62 166 13 52-49 114-4 110 47M555 435c55-65 133-70 181 0" /></svg></div>
         <Header />
@@ -115,12 +94,10 @@ export default function App() {
           <Routes><Route path="/" element={<HomePage />} /><Route path="/videos" element={<VideosPage />} /><Route path="/contact" element={<ContactPage />} /><Route path="*" element={<NotFoundPage />} /></Routes>
         </main>
         <footer className="site-footer section-shell">
-          <button className="replay-button" type="button" onClick={replayIntro}><ReplayIcon className="size-4" /> Replay intro</button>
           <p>{profile.displayName ? `${profile.displayName} · ` : ''}Made of curiosity. Built for the cloud.</p>
           <span className="footer-note"><span className="small-status-dot" /> Always learning</span>
         </footer>
       </div>
-      {introVisible && <VaultIntro key={introKey} onComplete={completeIntro} />}
     </>
   )
 }

@@ -146,10 +146,10 @@ pnpm preview
 - `src/components/ProjectJourney.tsx` and `project-journey.css` render the connected project path.
 - `src/components/LearningApproach.tsx` and `learning-approach.css` render the documentation approach and certification goals.
 - `public/assets/portrait.jpg` is the homepage portrait.
-- `src/components/VaultIntro.tsx` and `vault-intro.css` control the vault artwork, timing, and intro controls.
+- `src/components/VaultIntro.tsx` and `vault-intro.css` retain the vault artwork, timing, and intro controls for possible reuse; the intro is currently disabled.
 - `public/assets/vault-intro-audio.mp3` contains the selected intro music excerpt.
 
-The homepage and Videos page use the same video collection, which supports YouTube videos, uploaded video files, and links to recordings. The vault intro has skip, sound, and replay controls so visitors can choose how to enter the portfolio.
+The homepage and Videos page use the same video collection, which supports YouTube videos, uploaded video files, and links to recordings. The site currently opens directly to the requested page, with no vault intro or replay button.
 
 ## 4. What I would do differently at production scale
 
