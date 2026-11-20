@@ -1,0 +1,126 @@
+name: Contact API CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'functions/**'
+      - 'scripts/verify-function-package.mjs'
+      - '.github/workflows/deploy-function-app.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'functions/**'
+      - 'scripts/verify-function-package.mjs'
+      - '.github/workflows/deploy-function-app.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Test and package API
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+        with:
+          version: '11.25.0'
+          run_install: false
+
+      - name: Install API dependencies
+        run: pnpm --dir functions install --ignore-workspace --frozen-lockfile
+
+      - name: Build and test API
+        run: pnpm --dir functions test
+
+      - name: Assemble production package
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_dir="$RUNNER_TEMP/function-package"
+          mkdir -p "$package_dir"
+          cp functions/host.json functions/package.json functions/pnpm-lock.yaml "$package_dir/"
+          cp -R functions/dist "$package_dir/dist"
+          pnpm --dir "$package_dir" install --ignore-workspace --prod --frozen-lockfile --ignore-scripts --config.node-linker=hoisted
+          node scripts/verify-function-package.mjs "$package_dir"
+          cd "$package_dir"
+          zip -q -r "$RUNNER_TEMP/function-api.zip" host.json package.json pnpm-lock.yaml dist node_modules
+
+      - name: Verify extracted release artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -q "$RUNNER_TEMP/function-api.zip" -d "$RUNNER_TEMP/function-extracted"
+          node scripts/verify-function-package.mjs "$RUNNER_TEMP/function-extracted"
+          sha256sum "$RUNNER_TEMP/function-api.zip" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: function-api-${{ github.sha }}
+          path: ${{ runner.temp }}/function-api.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Report deployment setup status
+        if: github.event_name != 'pull_request' && vars.AZURE_FUNCTION_DEPLOY_ENABLED != 'true'
+        run: echo 'API tests and packaging completed. Deployment stays disabled until Azure OIDC and repository variables are configured; see docs/contact-phase-5.md.' >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy production API
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.AZURE_FUNCTION_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: portfolio-production-api
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Validate deployment configuration
+        shell: bash
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_FUNCTION_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_FUNCTION_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_FUNCTION_SUBSCRIPTION_ID }}
+        run: |
+          set -euo pipefail
+          for variable in AZURE_CLIENT_ID AZURE_TENANT_ID AZURE_SUBSCRIPTION_ID; do
+            if [[ ! "${!variable}" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+              echo "::error::Missing or invalid $variable repository variable. See docs/contact-phase-5.md."
+              exit 1
+            fi
+          done
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: function-api-${{ github.sha }}
+          path: ${{ runner.temp }}/api-release
+
+      - name: Sign in to Azure with OIDC
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3
+        with:
+          client-id: ${{ vars.AZURE_FUNCTION_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_FUNCTION_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_FUNCTION_SUBSCRIPTION_ID }}
+
+      - name: Deploy tested package to Flex Consumption
+        uses: Azure/functions-action@c5060b3b8bb1ebbcb531abd00c822ecbaa8ea656 # v1
+        with:
+          app-name: func-portfolio-contact
+          package: ${{ runner.temp }}/api-release/function-api.zip
+          remote-build: false
+
+      - name: Record deployment scope
+        run: echo 'API package deployed. Complete the signed-in owner and public contact checks in docs/contact-phase-5.md; a successful deployment alone does not verify those paths.' >> "$GITHUB_STEP_SUMMARY"

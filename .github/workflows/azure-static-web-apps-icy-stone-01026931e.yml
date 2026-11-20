@@ -15,10 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           submodules: true
           lfs: false
+          persist-credentials: false
 
       - name: Set up Node
         uses: actions/setup-node@v7
@@ -33,8 +34,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Test website
+        run: pnpm test
+
       - name: Build website
-        # The public form stays disabled until the production API is ready.
+        # PR previews have no linked production API or production Turnstile key.
         run: pnpm run build
         env:
           VITE_TURNSTILE_SITE_KEY: ${{ github.event_name == 'push' && vars.VITE_TURNSTILE_SITE_KEY || '' }}

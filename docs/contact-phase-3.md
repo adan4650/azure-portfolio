@@ -203,4 +203,4 @@ Browser checks covered desktop and mobile account/inbox layouts, mobile navigati
 - [Desktop inbox with test messages](evidence/phase-3-inbox-desktop.jpg)
 - [Mobile inbox with test messages](evidence/phase-3-inbox-mobile.jpg)
 
-Application warning logs contain fixed failure codes and invocation IDs. No handler logs names, emails, bodies, auth headers, or raw storage exceptions. Monitoring configuration, Log Analytics inspection, Front Door, WAF, and backend GitHub deployment remain later phases; their absence is not covered by these unit tests.
+Application warning logs contain fixed failure codes and invocation IDs. No handler logs names, emails, bodies, auth headers, or raw storage exceptions. [Monitoring configuration and email delivery](monitoring-and-front-door.md) were subsequently verified. Front Door/WAF creation was blocked by the student subscription and is deferred. The [backend GitHub workflow](contact-phase-5.md) is prepared but still needs Azure setup and a verified production run; local tests do not establish those cloud deployment results.
