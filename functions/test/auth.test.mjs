@@ -121,16 +121,23 @@ test('an empty storage page preserves continuation; completion ends paging', asy
   assert.deepEqual(await listSubmissions(undefined, client({ done: true })), { submissions: [], nextCursor: null })
 })
 
-test('SWA routes protect private APIs without protecting public contact or rewriting API failures to HTML', () => {
+test('SWA enables built-in Microsoft sign-in while protecting private APIs and blocking GitHub', () => {
   const config = JSON.parse(readFileSync(new URL('../../public/staticwebapp.config.json', import.meta.url)))
   const matching = path => config.routes.find(rule => rule.route.endsWith('*') ? path.startsWith(rule.route.slice(0, -1)) : path === rule.route)
   assert.deepEqual(matching('/api/account').allowedRoles, ['authenticated'])
   assert.deepEqual(matching('/api/admin/submissions').allowedRoles, ['site_admin'])
   assert.deepEqual(matching('/admin').allowedRoles, ['site_admin'])
-  for (const path of ['/', '/videos', '/contact', '/account', '/api/contact']) assert.equal(matching(path)?.allowedRoles, undefined)
+  for (const path of ['/', '/videos', '/contact', '/account', '/api/contact', '/.auth/login/aad', '/.auth/login/aad/callback']) {
+    assert.equal(matching(path)?.allowedRoles, undefined)
+    assert.equal(matching(path)?.statusCode, undefined)
+  }
   for (const path of ['/api/account', '/api/admin/submissions', '/admin', '/account', '/.auth/me']) assert.equal(matching(path).headers['Cache-Control'], 'no-store')
   assert.ok(config.navigationFallback.exclude.includes('/api/*'))
   assert.ok(config.navigationFallback.exclude.includes('/.auth/*'))
   assert.equal(config.responseOverrides?.['401'], undefined)
-  assert.match(config.auth.identityProviders.azureActiveDirectory.registration.openIdIssuer, /login\.microsoftonline\.com\/[a-f0-9-]{36}\/v2\.0$/)
+  assert.equal(config.auth, undefined)
+  for (const path of ['/.auth/login/github', '/.auth/login/github/', '/.auth/login/github/callback']) {
+    assert.equal(matching(path).statusCode, 404)
+    assert.equal(matching(path).headers['Cache-Control'], 'no-store')
+  }
 })

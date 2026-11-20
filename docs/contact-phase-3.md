@@ -1,6 +1,8 @@
 # Phase 3 — optional sign-in and private inbox
 
-I am doing the Azure work myself. This release adds the account and inbox code; the public portfolio and contact form remain public. Complete one numbered stage, verify it, then continue. The corrected backend now returns `401` with `{"code":"unauthorized"}` for an unsigned inbox request. The next stage is **publish the frontend and verify Microsoft sign-in before assigning `site_admin`**.
+I am doing the Azure work myself. The account and inbox code is deployed; the public portfolio and contact form remain public. On November 20, 2026, I chose SWA's built-in Microsoft sign-in so I can use a personal Microsoft account with my Gmail address. This replaces the original university-tenant restriction. The current step is **verify personal Microsoft sign-in before assigning `site_admin`**.
+
+The original custom registration reached my university's administrator-consent screen after enabling ID-token issuance. Completed login, admin reads, and role revocation remain unverified. The new setup uses Microsoft's preconfigured provider instead of that university registration; it does not change the university's consent policy. Other Microsoft accounts can sign in, but only my explicitly assigned `site_admin` account should read submissions. GitHub sign-in is blocked.
 
 ## What the code does
 
@@ -10,7 +12,7 @@ I am doing the Azure work myself. This release adds the account and inbox code; 
 | `functions/src/account.ts` | Returns the authenticated user's account summary |
 | `functions/src/inbox.ts` | Requires `site_admin`, validates the cursor, and returns a bounded page |
 | `functions/src/storage.ts` | Uses the Function's managed identity and a fixed table/partition query |
-| `public/staticwebapp.config.json` | Selects the tenant-specific provider, protects API/admin routes, and disables caching on personalized routes |
+| `public/staticwebapp.config.json` | Uses built-in Microsoft sign-in, blocks GitHub sign-in, protects API/admin routes, and disables caching on personalized routes |
 | `src/auth/AuthContext.tsx` | Loads the account, obtains an optional display name, and rechecks the session when returning to the page |
 | `src/pages/AccountPage.tsx` | Public sign-in landing page and signed-in account controls |
 | `src/pages/AdminInboxPage.tsx` | Private message display, loading/error states, and previous/next navigation |
@@ -23,10 +25,10 @@ The API checks `authenticated` for `/api/account` and `site_admin` for `/api/adm
 
 | Identity or permission | Job | Does not grant |
 | --- | --- | --- |
-| My Microsoft Entra user | Identifies the person signing in | Automatic inbox access |
+| My personal Microsoft account | Identifies the website user; Gmail can be its username | Automatic inbox access or Azure resource permissions |
 | SWA `site_admin` role | Lets the assigned website user request the private inbox | Azure resource or Table Storage permissions |
 | Function system-assigned identity | Reads/writes contact entities using table-scoped Storage Table Data Contributor | Website membership or sign-in privileges |
-| `id-portfolio-signin` user-assigned identity | Lets SWA authenticate to the Entra app registration through federation | Contact table access; it has no storage role |
+| `id-portfolio-signin` user-assigned identity | Belongs to the previous custom sign-in setup; no longer referenced by the website configuration | Contact table access; it has no storage role |
 | My Azure user with Storage Table Data Reader | Allows my CLI identity to inspect this table directly | The website's `site_admin` role |
 | GitHub deployment identity | Publishes application code | A visitor session or intended data-reader role |
 
@@ -34,22 +36,21 @@ The existing frontend workflow uses a deployment token. A separate federated ide
 
 My goal is for my account to be the only human with inbox access. Assign `site_admin` only to my account and audit direct/inherited storage roles separately. The Function necessarily reads the table. Subscription or directory administrators may be able to grant themselves access; a table-scoped assignment does not remove their administrative authority.
 
-## 1. Verify the sign-in prerequisites already configured
+## 1. Prepare my personal Microsoft account
 
-In **Static Web Apps → andre-portfolio → Identity → User assigned**, confirm `id-portfolio-signin` is attached. In **Environment variables**, use the **Production** environment:
+Open [Microsoft account](https://account.microsoft.com/) privately and try my Gmail address. If it already identifies a Microsoft account, use that account. Otherwise, choose **Create an account**, use my existing Gmail address, and complete Microsoft's verification. This is Microsoft authentication using Gmail as the username, not Google authentication. My Google password is not a Microsoft sign-in credential. See [Microsoft's account guidance](https://support.microsoft.com/en-us/accounts-billing/manage/link-your-google-account-and-microsoft-account).
 
-| Setting | Value source |
-| --- | --- |
-| `AZURE_CLIENT_ID` | App registration `portfolio-web-signin` application/client ID |
-| `OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID` | `id-portfolio-signin` client ID |
+The frontend release removes the custom `auth` registration from `staticwebapp.config.json`. SWA then uses its [preconfigured Microsoft provider](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-authorization#prerequisites). Explicit routes block `/.auth/login/github` and its callback paths because built-in providers otherwise include GitHub. The Microsoft sign-in URL stays `/.auth/login/aad`. No Google OAuth registration or new Azure subscription is needed for this website sign-in choice.
 
-The app registration is single tenant (`AzureADMyOrg`). Its web callback is `https://icy-stone-01026931e.4.azurestaticapps.net/.auth/login/aad/callback`. Its federated credential uses the sign-in identity's **object ID** as subject, the tenant's v2 issuer, and audience `api://AzureADTokenExchange`. Keep this identity attached only to this SWA. This follows Microsoft's [managed identity sign-in configuration](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-custom#use-a-managed-identity-instead-of-a-secret).
+The old SWA settings `AZURE_CLIENT_ID` and `OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID` are no longer referenced by the website configuration. The `portfolio-web-signin` registration and `id-portfolio-signin` identity are not prerequisites. After personal sign-in and role tests pass, review dependencies and remove those unused settings, identity attachment, federation, and registration manually if they are dedicated to this project. No Azure cleanup has been performed by this code release.
 
-These settings belong to **SWA**, not the Function App or Vite. The deployed JSON selects the matching tenant and setting names. No Entra client secret is needed for this setup.
+My current Azure subscription ownership and storage reader assignment are separate from website access. My personal account only needs the website's `site_admin` role to view the inbox. The Function's system-assigned storage identity and SWA-linked authentication remain required.
 
-**Recording:** client, tenant, and object IDs identify resources but are not credentials. Blur personal account details and unrelated browser tabs. Keep all secret values, cookies, tokens, connection strings, invitation URLs, and real messages off screen.
+**Recording:** pause for account creation, passwords, email verification, and MFA. Blur personal account details and unrelated browser tabs. Keep secret values, cookies, tokens, connection strings, invitation URLs, and real messages off screen.
 
 ## 2. Deploy the Function package first
+
+This stage is already complete. Switching the website's Microsoft provider does not require another Function deployment; the existing `aad` principal checks and role requirements also apply to the built-in Microsoft provider. The instructions below remain for rebuilding the backend when its code changes.
 
 The corrected archive is `work/portfolio-inbox-api-flex-route-fix-2026-11-19.zip`. It supersedes the earlier inbox ZIP. It contains the existing contact handler plus the new account and submissions handlers. The frontend workflow continues to deploy only `dist/`; it does not deploy this API.
 
@@ -96,21 +97,21 @@ curl --silent --show-error --include \
 
 Review and commit the phase 3 source, tests, documentation, and `public/staticwebapp.config.json`, then push through the existing frontend workflow. Keep `VITE_TURNSTILE_SITE_KEY` in the GitHub repository variable. Keep `api_location` empty, because the separate Function is already linked.
 
-Verify the successful GitHub Actions run before opening the production site in a new private window. Check `/`, `/#projects`, `/videos`, and `/contact` while signed out. Submit only a test message. `/account` must show the Microsoft sign-in button. An unsigned request to either protected API must be denied, not receive contact records or a `200` HTML fallback.
+Verify the successful GitHub Actions run before opening the production site in a new private window. Check `/`, `/#projects`, `/videos`, and `/contact` while signed out. Submit only a test message. `/account` must show the Microsoft sign-in button without the old organization restriction. An unsigned request to either protected API must be denied, not receive contact records or a `200` HTML fallback. `/.auth/login/github` and `/.auth/login/github/callback` must return `404`; Microsoft sign-in must start the built-in provider flow.
 
 Do not copy local mock identities or the ignored `work/auth-preview.mjs` into deployed code. `pnpm dev` alone does not emulate Azure's authentication boundary; actual sign-in is tested on SWA.
 
 ## 4. Verify sign-in before assigning admin
 
-Open `/account` and use **Sign in with Microsoft**. Sign in with my account in the configured tenant. The page should show my name, a sign-out control, and no inbox access yet. `/api/account` should return `200` with `isAdmin: false`; `/api/admin/submissions` should be denied with no records. Check response headers for `no-store`.
+Open `/account` in a new private window and use **Sign in with Microsoft**. Sign in with my personal Microsoft account using its Gmail address. If the chooser offers my university account, choose another account. The page should show my available display name or account identifier, a sign-out control, and no inbox access yet. `/api/account` should return `200` with `isAdmin: false`; `/api/admin/submissions` should be denied with no records. Check response headers for `no-store`.
 
-Sign-in is restricted to the configured tenant's members and accepted guests, subject to its consent, assignment, and access policies. It does not mean only my account can sign in. A personal Microsoft account outside that tenant should not authenticate to this app. This distinction follows Microsoft's [tenant-restricted authentication guidance](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-authorization).
+Any Microsoft account can attempt to sign in with the built-in provider, subject to Microsoft's policies and any work/school account's organizational restrictions. This release intentionally drops tenant-restricted eligibility. The private inbox still requires an explicitly assigned website role at both SWA and the Function. Do not infer admin access from an email address or browser state.
 
-If Entra asks for administrator consent or denies access, record the error code privately and resolve it with the tenant administrator. Do not switch the issuer to `common` or disable authentication to bypass that policy. The university portal restriction previously observed does not prove that my app registration is broken; the CLI successfully created it.
+If personal sign-in fails, record the error code privately and confirm I selected the personal Microsoft account. Do not disable Function authentication or weaken the inbox role check. A work/school account may still require its organization's approval; this setup does not authorize bypassing that policy.
 
 ## 5. Assign the website role only to my account
 
-Open **andre-portfolio → Role management → Invite**. Choose Microsoft Entra ID, my sign-in email, the production SWA domain, role `site_admin`, and a short invitation lifetime. Generate the link and redeem it privately using that same account. Then sign out and back in and verify the inbox opens. Do not grant this role to a normal member/test user.
+Open **andre-portfolio → Role management → Invite**. Choose Microsoft Entra ID, the exact identity/email shown for my personal Microsoft sign-in, the production SWA domain, role `site_admin`, and a short invitation lifetime. Verify account details first, since a Microsoft account may have aliases. Generate the link and redeem it privately using that same account. Then sign out and back in and verify the inbox opens. Review existing assignments and remove any previous account's `site_admin` role so only my chosen personal account has it. Do not grant this role to a normal member/test user.
 
 To revoke access, select my user in **Role management**, remove `site_admin`, and select **Update**. Refresh the inbox and repeat the API request; allow propagation, then check a fresh sign-in too. Deleting the SWA user is a separate option that invalidates its permissions and changes its SWA user ID if added again. See [role management](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-custom#manage-roles).
 
@@ -118,9 +119,9 @@ The Function checks the role on every read, but it receives the platform's curre
 
 ## 6. Test other users without giving them inbox access
 
-Prefer an existing permitted tenant member for the non-admin test. For a new account, an authorized tenant administrator can use **Microsoft Entra ID → Users → New user → Create new user**. For an external tester, use **Invite external user** and have them accept the invitation. Directory permissions and guest invitation policy apply; subscription Owner is not automatically an Entra user administrator. Keep initial passwords and invitation links out of recordings. See [create or invite users](https://learn.microsoft.com/en-us/entra/fundamentals/add-users).
+Use a second permitted Microsoft account for the non-admin test. It does not need a guest invitation into my university directory for the built-in provider. Leave it without `site_admin`; expect a working account page and a denied inbox/API with no records. Use only synthetic contact messages in recordings.
 
-An Entra guest invitation makes a person eligible to authenticate in the tenant. A SWA role invitation grants a website role. They are different operations. Use the tenant invitation only where permitted, and do not assign `site_admin` to that tester. The expected result is a working account page and a denied inbox/API. The real contact data remains private.
+If I return to a tenant-restricted design later, an authorized directory administrator can use **Microsoft Entra ID → Users → New user → Create new user** or **Invite external user**, subject to directory policies. A directory guest invitation and a SWA role invitation serve different purposes. Subscription Owner does not automatically grant directory administration rights. See [create or invite users](https://learn.microsoft.com/en-us/entra/fundamentals/add-users).
 
 ## 7. Record access tests
 
@@ -130,8 +131,8 @@ Use test messages and note UTC time, identity category, HTTP status, and whether
 | --- | --- | --- |
 | Anonymous contact form | Real verification followed by durable receipt | Phase 1 success screenshot observed; repeat after release |
 | Anonymous account/inbox APIs | Denied, no records | Cloud test pending |
-| Tenant member account | `200`, name and sign-out visible | Cloud test pending |
-| Tenant member inbox | Denied, no records | Local tests pass; cloud pending |
+| Personal Microsoft account | `200`, account details and sign-out visible | Cloud test pending |
+| Signed-in non-admin inbox | Denied, no records | Local tests pass; cloud pending |
 | My explicitly assigned `site_admin` | Bounded newest-first pages | Local tests pass; cloud pending |
 | Role removed | Further reads denied after propagation | Local tests pass; cloud pending |
 | Direct Function request | Platform `401`/`403` | Contact `401` observed; repeat for new endpoints |

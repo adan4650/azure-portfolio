@@ -18,7 +18,7 @@ export default function AccountPage() {
         {auth.status === 'error' && <div role="alert"><h2>Account unavailable</h2><p>We couldn’t check your session. Try again in a moment.</p><button className="button button--primary" onClick={auth.refresh}>Try again</button></div>}
         {auth.status === 'anonymous' && <>
           <h2>Welcome back</h2>
-          <p>Use your Microsoft account from the portfolio’s connected organization. Inbox access is limited to the portfolio owner.</p>
+          <p>Sign in with your Microsoft account. Inbox access is limited to the portfolio owner.</p>
           <a className="button button--primary" href={signInUrl}>Sign in with Microsoft</a>
         </>}
         {auth.status === 'signed-in' && <>
