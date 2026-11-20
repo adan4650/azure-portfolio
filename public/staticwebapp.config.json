@@ -4,8 +4,26 @@
     "exclude": ["/assets/*", "/favicon.svg", "/api/*", "/.auth/*"]
   },
   "routes": [
+    { "route": "/api/account", "allowedRoles": ["authenticated"], "headers": { "Cache-Control": "no-store" } },
+    { "route": "/api/admin/*", "allowedRoles": ["site_admin"], "headers": { "Cache-Control": "no-store" } },
+    { "route": "/admin", "allowedRoles": ["site_admin"], "rewrite": "/index.html", "headers": { "Cache-Control": "no-store" } },
+    { "route": "/admin/*", "allowedRoles": ["site_admin"], "rewrite": "/index.html", "headers": { "Cache-Control": "no-store" } },
+    { "route": "/account", "rewrite": "/index.html", "headers": { "Cache-Control": "no-store" } },
+    { "route": "/account/*", "rewrite": "/index.html", "headers": { "Cache-Control": "no-store" } },
+    { "route": "/.auth/*", "headers": { "Cache-Control": "no-store" } },
     { "route": "/api/*", "headers": { "Cache-Control": "no-store" } }
   ],
+  "auth": {
+    "identityProviders": {
+      "azureActiveDirectory": {
+        "registration": {
+          "openIdIssuer": "https://login.microsoftonline.com/60956884-10ad-40fa-863d-4f32c1e3a37a/v2.0",
+          "clientIdSettingName": "AZURE_CLIENT_ID",
+          "clientSecretSettingName": "OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID"
+        }
+      }
+    }
+  },
   "globalHeaders": {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "strict-origin-when-cross-origin"

@@ -230,11 +230,7 @@ main:focus { outline: none; }
   .library-strip p { font-size: 10px; padding-left: 16px; }
   .site-footer p { font-size: 9px; }
 }
-@media (max-width: 720px) {
-  html { scroll-padding-top: 20px; }
-  .section-shell { width: calc(100% - 40px); }
-  .site-header { height: 72px; }
-  .brand { font-size: 16px; }
+@media (max-width: 1000px) {
   .navigation-toggle { display: flex; height: 42px; width: 42px; flex-direction: column; gap: 6px; align-items: center; justify-content: center; background: transparent; border: 1px solid #b88acf45; border-radius: 5px; }
   .navigation-toggle span { height: 1px; width: 18px; background: #eee4f4; transition: transform .2s; }
   .navigation-toggle[aria-expanded="true"] span:first-child { transform: translateY(3.5px) rotate(45deg); }
@@ -246,6 +242,12 @@ main:focus { outline: none; }
   .nav-link--active::after { right: auto; left: 0; top: 15px; bottom: 15px; height: auto; width: 2px; }
   .nav-divider { height: 1px; width: auto; margin: 6px 12px; }
   .nav-unavailable-text { position: static; font-size: 9px; margin-left: 3px; }
+}
+@media (max-width: 720px) {
+  html { scroll-padding-top: 20px; }
+  .section-shell { width: calc(100% - 40px); }
+  .site-header { height: 72px; }
+  .brand { font-size: 16px; }
   .hero { grid-template-columns: minmax(0, 1fr); gap: 34px; padding-top: 35px; padding-bottom: 40px; }
   .hero h1 { font-size: clamp(38px, 8.8vw, 62px); line-height: 1.08; letter-spacing: -.05em; max-width: 580px; margin-bottom: 18px; }
   .hero__eyebrow { margin-bottom: 16px; }

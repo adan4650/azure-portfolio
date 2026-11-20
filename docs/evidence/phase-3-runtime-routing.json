@@ -1,0 +1,47 @@
+{
+  "CheckedAtUtc": "2026-11-20T02:30:33.8575649Z",
+  "Environment": "Local Azure Functions Core Tools 4.16.1, runtime 4.1054.250.26428",
+  "Scope": "HTTP route registration and handlers only; synthetic principals; no Azure storage access or platform authentication test",
+  "Results": [
+    {
+      "Path": "/api/account",
+      "Method": "GET",
+      "SyntheticRole": "anonymous",
+      "Status": 401,
+      "Code": "unauthorized",
+      "CacheControl": "no-store"
+    },
+    {
+      "Path": "/api/admin/submissions",
+      "Method": "GET",
+      "SyntheticRole": "anonymous",
+      "Status": 401,
+      "Code": "unauthorized",
+      "CacheControl": "no-store"
+    },
+    {
+      "Path": "/api/admin/submissions",
+      "Method": "GET",
+      "SyntheticRole": "member",
+      "Status": 403,
+      "Code": "forbidden",
+      "CacheControl": "no-store"
+    },
+    {
+      "Path": "/api/admin/submissions?cursor=invalid",
+      "Method": "GET",
+      "SyntheticRole": "site_admin",
+      "Status": 400,
+      "Code": "invalid_cursor",
+      "CacheControl": "no-store"
+    },
+    {
+      "Path": "/api/contact",
+      "Method": "POST",
+      "SyntheticRole": "anonymous",
+      "Status": 400,
+      "Code": "verification_failed",
+      "CacheControl": "no-store"
+    }
+  ]
+}

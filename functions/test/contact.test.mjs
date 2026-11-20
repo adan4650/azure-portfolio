@@ -2,7 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { handleContact, MAX_BODY_BYTES } from '../dist/contact.js'
 import { verifyTurnstile } from '../dist/turnstile.js'
-import { submissionEntity } from '../dist/storage.js'
+import { submissionEntity, contactStorageCredential } from '../dist/storage.js'
+import { AzureCliCredential, ManagedIdentityCredential } from '@azure/identity'
 
 const valid = { name: 'Test Visitor', email: 'visitor@example.com', message: 'TEST ONLY: portfolio walkthrough.', website: '', turnstileToken: 'test-token' }
 const request = (body = valid, headers = {}) => new Request('https://portfolio.example/api/contact', {
@@ -131,4 +132,11 @@ test('keys order newest first and retain uniqueness for same-time submissions', 
   assert.equal(old.partitionKey, 'inbox')
   assert.ok(recent.rowKey < old.rowKey)
   assert.notEqual(recent.rowKey, other.rowKey)
+})
+
+test('storage defaults to managed identity without hosting markers; Azure CLI requires local opt-in', () => {
+  assert.ok(contactStorageCredential({}) instanceof ManagedIdentityCredential)
+  assert.ok(contactStorageCredential({ WEBSITE_INSTANCE_ID: 'instance' }) instanceof ManagedIdentityCredential)
+  assert.ok(contactStorageCredential({ CONTACT_STORAGE_USE_AZURE_CLI: 'false' }) instanceof ManagedIdentityCredential)
+  assert.ok(contactStorageCredential({ CONTACT_STORAGE_USE_AZURE_CLI: 'true' }) instanceof AzureCliCredential)
 })

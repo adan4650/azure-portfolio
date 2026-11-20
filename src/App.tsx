@@ -5,9 +5,13 @@ import { ArrowRight, ArrowUpRight } from './components/Icons'
 import HomePage from './pages/HomePage'
 import VideosPage from './pages/VideosPage'
 import ContactPage from './pages/ContactPage'
+import AccountPage from './pages/AccountPage'
+import AdminInboxPage from './pages/AdminInboxPage'
+import { useAuth } from './auth/AuthContext'
 import { profile } from './data/portfolio'
 
 function Header() {
+  const auth = useAuth()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -38,6 +42,8 @@ function Header() {
         <Link className={`nav-link ${isProjects ? 'nav-link--active' : ''}`} to="/#projects" onClick={closeMenu} aria-current={isProjects ? 'location' : undefined}>Projects</Link>
         <NavLink className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`} to="/videos" onClick={closeMenu}>Videos</NavLink>
         <NavLink className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`} to="/contact" onClick={closeMenu}>Contact</NavLink>
+        <NavLink className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`} to="/account" onClick={closeMenu}>Account</NavLink>
+        {auth.user?.isAdmin && <NavLink className={({ isActive }) => `nav-link ${isActive ? 'nav-link--active' : ''}`} to="/admin" onClick={closeMenu}>Inbox</NavLink>}
         <span className="nav-divider" aria-hidden="true" />
         <a className="nav-link nav-link--social" href={profile.githubUrl} target="_blank" rel="noreferrer" onClick={closeMenu}>GitHub <ArrowUpRight /><span className="sr-only"> (opens in a new tab)</span></a>
         {profile.linkedInUrl ? <a className="nav-link nav-link--social" href={profile.linkedInUrl} target="_blank" rel="noreferrer" onClick={closeMenu}>LinkedIn <ArrowUpRight /><span className="sr-only"> (opens in a new tab)</span></a> : <span className="nav-link nav-link--unavailable" aria-label="LinkedIn, link coming soon">LinkedIn <span className="unavailable-indicator" aria-hidden="true" /><span className="nav-unavailable-text">Coming soon</span></span>}
@@ -68,7 +74,8 @@ export default function App() {
   }, [location.pathname])
 
   useEffect(() => {
-    const title = location.pathname === '/contact' ? 'Contact | Andre Daniels Jr.' : location.pathname === '/videos' ? 'Videos | Andre Daniels Jr.' : 'Andre Daniels Jr. | Cloud Portfolio'
+    const pageTitles: Record<string, string> = { '/contact': 'Contact', '/videos': 'Videos', '/account': 'Account', '/admin': 'Inbox' }
+    const title = pageTitles[location.pathname] ? `${pageTitles[location.pathname]} | Andre Daniels Jr.` : 'Andre Daniels Jr. | Cloud Portfolio'
     document.title = title
     const frame = window.requestAnimationFrame(() => {
       if (location.hash) {
@@ -91,7 +98,7 @@ export default function App() {
         <div className="ambient-background" aria-hidden="true"><div className="cloud-haze cloud-haze--left" /><div className="cloud-haze cloud-haze--right" /><div className="cloud-haze cloud-haze--bottom" /><svg className="cloud-trace" viewBox="0 0 1440 880" preserveAspectRatio="none"><path d="M-40 750c72-118 154-100 206-36 40-44 89-43 145 2M490 90c45-77 129-62 166 13 52-49 114-4 110 47M555 435c55-65 133-70 181 0" /></svg></div>
         <Header />
         <main id="main-content" ref={mainRef} tabIndex={-1}>
-          <Routes><Route path="/" element={<HomePage />} /><Route path="/videos" element={<VideosPage />} /><Route path="/contact" element={<ContactPage />} /><Route path="*" element={<NotFoundPage />} /></Routes>
+          <Routes><Route path="/" element={<HomePage />} /><Route path="/videos" element={<VideosPage />} /><Route path="/contact" element={<ContactPage />} /><Route path="/account" element={<AccountPage />} /><Route path="/admin" element={<AdminInboxPage />} /><Route path="*" element={<NotFoundPage />} /></Routes>
         </main>
         <footer className="site-footer section-shell">
           <p>{profile.displayName ? `${profile.displayName} · ` : ''}Made of curiosity. Built for the cloud.</p>

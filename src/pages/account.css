@@ -1,0 +1,42 @@
+.account-page { display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(32px, 6vw, 88px); padding-block: 72px 100px; min-height: calc(100svh - 190px); align-items: start; font-size: 16px; }
+.account-intro h1, .inbox-heading h1 { font-size: clamp(38px, 4.5vw, 64px); line-height: 1.08; letter-spacing: -.05em; margin: 0 0 24px; }
+.account-intro h1 span, .inbox-heading h1 span { color: var(--yellow); }
+.account-intro > p:not(.eyebrow), .account-panel__body p { color: #d8cbe1; line-height: 1.8; }
+.account-text-link { color: var(--yellow); text-decoration: underline; text-underline-offset: 4px; }
+.account-panel { min-width: 0; border: 1px solid #a67aca70; background: #1b0d27; box-shadow: 7px 7px 0 #09030e; }
+.account-panel__bar { padding: 16px 26px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--yellow); }
+.account-panel__body { padding: 32px; }
+.account-panel__body h2 { margin: 0 0 14px; font-size: 28px; letter-spacing: -.03em; }
+.account-panel__body p { margin: 0 0 24px; }
+.account-panel__body .account-caption { font-size: 14px; margin-bottom: 8px; }
+.account-name, .account-details { overflow-wrap: anywhere; }
+.account-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.account-page .button, .inbox-page .button { font-size: 14px; min-height: 44px; }
+.inbox-page { padding-block: 64px 90px; min-height: calc(100svh - 190px); font-size: 16px; }
+.inbox-heading { display: flex; justify-content: space-between; gap: 24px; align-items: center; }
+.inbox-account { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 16px; font-size: 14px; max-width: 360px; overflow-wrap: anywhere; }
+.inbox-account a { color: var(--yellow); text-decoration: underline; text-underline-offset: 4px; }
+.inbox-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-block: 20px; border-block: 1px solid var(--border); margin-block: 10px 28px; }
+.inbox-toolbar p { font-size: 14px; color: #d8cbe1; margin: 0; }
+.inbox-results { display: grid; gap: 20px; }
+.inbox-state { padding: 32px; border: 1px solid var(--border); background: #1b0d27; line-height: 1.7; }
+.inbox-state h2 { margin: 0 0 12px; font-size: 24px; }
+.inbox-state p { color: #d8cbe1; }
+.inbox-card { padding: 28px 32px; border: 1px solid #a67aca70; background: #1b0d27; min-width: 0; }
+.inbox-card__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.inbox-card__heading h2 { margin: 0; font-size: 22px; overflow-wrap: anywhere; }
+.inbox-badge { color: var(--yellow); border: 1px solid #ffe33355; padding: 4px 10px; font-size: 14px; border-radius: 4px; }
+.inbox-card__meta { display: flex; flex-wrap: wrap; gap: 8px 24px; color: #c4b1d1; font-size: 14px; margin-block: 12px 22px; overflow-wrap: anywhere; }
+.inbox-message { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; font-size: 16px; line-height: 1.8; }
+.inbox-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 28px; font-size: 14px; }
+.inbox-page button:disabled { opacity: .5; }
+@media (min-width: 1001px) { .navigation { gap: clamp(14px, 1.8vw, 25px); } }
+@media (max-width: 720px) {
+  .account-page { grid-template-columns: 1fr; padding-block: 42px 60px; }
+  .account-panel__body, .inbox-card, .inbox-state { padding: 22px; }
+  .inbox-page { padding-block: 42px 60px; }
+  .inbox-heading { align-items: flex-start; flex-direction: column; gap: 0; }
+  .inbox-account { justify-content: flex-start; margin-bottom: 20px; }
+  .inbox-toolbar { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .inbox-pagination .button { padding-inline: 14px; }
+}
