@@ -93,7 +93,9 @@
     "independentlyObserved": false
   },
   "freshPublicSubmission": {
-    "result": "pending",
+    "result": "passed",
+    "evidence": "User confirmed the public Contact form showed success and the new synthetic message appeared after refreshing the inbox following deployment.",
+    "confirmedOn": "2026-11-20",
     "independentlyObserved": false
   },
   "validation": {

@@ -41,9 +41,10 @@ Front Door, its endpoint, custom WAF rules, and Front Door-origin restrictions a
 
 The decision is to keep the student subscription and defer this lab. Available student credit did not imply eligibility to create Front Door. Reconsider the service only with a supported subscription and a new cost review; do not claim Front Door/WAF protection in the project's architecture or demo.
 
+The [separate Function deployment workflow](contact-phase-5.md) is deployed. Its first successful production run, six endpoint checks, and user-confirmed inbox refresh and new public submission are recorded in [release evidence](evidence/function-cicd-release-2026-11-20.json).
+
 ## Remaining closeout evidence
 
-- The [separate Function deployment workflow](contact-phase-5.md) is deployed: its first successful production run and endpoint checks are recorded in [release evidence](evidence/function-cicd-release-2026-11-20.json). Complete the fresh public submission check for this release.
 - Confirm the temporary email-check rule was removed or disabled; keep the permanent 5xx rule and action group.
 - Test live owner-setting revocation and restoration separately from deployment, recording observed propagation. Local authorization tests already cover the fail-closed behavior; Azure propagation remains untested.
 - Complete the outstanding storage role audit and wrong-identity/Shared Key denial evidence without changing the working Function's permissions.
