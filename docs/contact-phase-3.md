@@ -1,8 +1,8 @@
 # Phase 3 — optional sign-in and private inbox
 
-I am doing the Azure work myself. The account and inbox code is deployed; the public portfolio and contact form remain public. On November 20, 2026, I chose SWA's built-in Microsoft sign-in so I can use a personal Microsoft account with my Gmail address. This replaces the original university-tenant restriction. The current step is **verify personal Microsoft sign-in before assigning `site_admin`**.
+I am doing the Azure work myself. The account and inbox code is deployed; the public portfolio and contact form remain public. On November 20, 2026, I chose SWA's built-in Microsoft sign-in so I can use a personal Microsoft account with my Gmail address. This replaces the original university-tenant restriction. Personal sign-in, the assigned `site_admin` role, and a production inbox read have now been observed. The current step is **resolve intermittent access denials and finish the access-control tests**.
 
-The original custom registration reached my university's administrator-consent screen after enabling ID-token issuance. Completed login, admin reads, and role revocation remain unverified. The new setup uses Microsoft's preconfigured provider instead of that university registration; it does not change the university's consent policy. Other Microsoft accounts can sign in, but only my explicitly assigned `site_admin` account should read submissions. GitHub sign-in is blocked.
+The original custom registration reached my university's administrator-consent screen after enabling ID-token issuance. The new setup uses Microsoft's preconfigured provider instead of that university registration; it does not change the university's consent policy. Other Microsoft accounts can sign in, but only my explicitly assigned `site_admin` account should read submissions. GitHub sign-in is blocked. Live role revocation and a second non-admin account still need verification.
 
 ## What the code does
 
@@ -117,6 +117,14 @@ To revoke access, select my user in **Role management**, remove `site_admin`, an
 
 The Function checks the role on every read, but it receives the platform's current principal. Record observed propagation time rather than claiming immediate revocation. The UI clears old messages on refresh and when the page is hidden, and rechecks the session on return. Data already viewed or copied cannot be recalled. After the revocation test, restore `site_admin` only to my account and confirm access again.
 
+### Intermittent inbox access
+
+On November 20, a user-provided response showed `isAdmin: true`, followed by a screenshot of a successful inbox read. Access was also reported to fail within seconds. The previous UI described every inbox `401` or `403` as session expiry, so that wording alone did not establish an expired login. The cause of the Azure denial has not been established.
+
+The frontend now coalesces focus/visibility events and shares an in-flight account check instead of cancelling and restarting it. After a denied inbox request, it rechecks `/api/account` and retries the read once after 500 ms only if the same user is still an administrator. Expiry, lost roles, failed account verification, and changed accounts stop that recovery. A second denial offers an explicit retry without claiming the session expired. Hiding the tab or signing out cancels recovery and clears private content. This does not renew Azure's authentication cookie or change any server authorization rule.
+
+After deployment, hard-refresh `/account`, open the inbox, and check normal reading, a tab switch, and a direct `/admin` reload. If denials continue, privately inspect the failed `/api/admin/submissions` response: record only UTC time, HTTP status, whether it is platform HTML or application JSON, and a fixed error code. Do not share cookie headers, tokens, full network exports, personal identifiers, or messages. A successful local recovery test does not prove the Azure-side issue is resolved.
+
 ## 6. Test other users without giving them inbox access
 
 Use a second permitted Microsoft account for the non-admin test. It does not need a guest invitation into my university directory for the built-in provider. Leave it without `site_admin`; expect a working account page and a denied inbox/API with no records. Use only synthetic contact messages in recordings.
@@ -131,14 +139,14 @@ Use test messages and note UTC time, identity category, HTTP status, and whether
 | --- | --- | --- |
 | Anonymous contact form | Real verification followed by durable receipt | Phase 1 success screenshot observed; repeat after release |
 | Anonymous account/inbox APIs | Denied, no records | November 20: both returned `401` |
-| Personal Microsoft account | `200`, account details and sign-out visible | Cloud test pending |
+| Personal Microsoft account | `200`, account details and sign-out visible | November 20: user screenshot confirmed sign-in and account API response |
 | Signed-in non-admin inbox | Denied, no records | Local tests pass; cloud pending |
-| My explicitly assigned `site_admin` | Bounded newest-first pages | Local tests pass; cloud pending |
+| My explicitly assigned `site_admin` | Bounded newest-first pages | November 20: one stored test message displayed; repeated access is intermittently denied |
 | Role removed | Further reads denied after propagation | Local tests pass; cloud pending |
 | Direct Function request | Platform `401`/`403` | November 20: inbox returned `401`; contact `401` previously observed |
 | Forged principal through either hostname | Denied without records | November 20: inbox returned `401` through both SWA and the direct Function hostname |
 | Wrong storage identity / Shared Key | Storage denies access | Cloud test pending |
-| Correct Function identity | Contact write and admin read work | Public receipt observed; admin read pending |
+| Correct Function identity | Contact write and admin read work | Public receipt and one production admin read observed |
 
 In Cloud Shell Bash, these probes use no real sign-in tokens and do not read messages:
 
@@ -172,11 +180,13 @@ Every probe must be denied with no submissions. A fabricated principal reaching 
 
 ## Local verification and recording evidence
 
+The session-recovery change passed 28 frontend tests and the production build. Regression cases cover overlapping browser events, transient denials, persistent denials, expiry, revocation, account changes, and cancelled responses after sign-out or hiding the page. Azure authorization rules and Function code are unchanged. User screenshots establish a successful personal login and inbox read, but do not establish session reliability or revocation behavior.
+
 On November 20, 2026, the built-in provider release passed 25 backend tests, 18 frontend tests, and the production build. [Live release probes](evidence/phase-3-personal-signin-release.json) confirmed public page access, contact validation, `401` responses from private endpoints and forged-principal probes, and the GitHub login entry point's `404`. The Microsoft redirect used Azure's shared identity service and `/common/oauth2/v2.0/authorize` with the platform registration. This verifies the start of login only; it does not verify personal account login, role assignment, storage reads, or revocation. No credentials, cookies, state, nonce, or message contents were recorded.
 
 On November 19, 2026, 25 backend tests and 18 frontend tests passed. Both production builds passed. The added route regression test fails with the old registration and passes with the correction. Automated tests use injected dependencies and synthetic identities; they do not establish the Azure platform trust boundary.
 
-Core Tools 4.16.1 (Functions runtime 4.1054.250.26428) reproduced the original reserved-route error and then served all three corrected routes. Five local HTTP probes verified anonymous denial, member denial, invalid admin cursor rejection, and the contact validation path. [Runtime evidence](evidence/phase-3-runtime-routing.json) records statuses and test scope. This isolated check used no Azure host storage or Application Insights connection, so storage health warnings were expected; it did not test cloud identity or data access. After redeployment, the November 19 user screenshot showed HTTP `401`, `Cache-Control: no-store`, and `{"code":"unauthorized"}` from the actual inbox endpoint through SWA (response time 02:36:21 UTC on November 20). Successful sign-in, admin reads, and role revocation still need cloud tests.
+Core Tools 4.16.1 (Functions runtime 4.1054.250.26428) reproduced the original reserved-route error and then served all three corrected routes. Five local HTTP probes verified anonymous denial, member denial, invalid admin cursor rejection, and the contact validation path. [Runtime evidence](evidence/phase-3-runtime-routing.json) records statuses and test scope. This isolated check used no Azure host storage or Application Insights connection, so storage health warnings were expected; it did not test cloud identity or data access. After redeployment, the November 19 user screenshot showed HTTP `401`, `Cache-Control: no-store`, and `{"code":"unauthorized"}` from the actual inbox endpoint through SWA (response time 02:36:21 UTC on November 20). Later November 20 screenshots confirmed personal sign-in and a production admin read; role revocation remains unverified in Azure.
 
 Browser checks covered desktop and mobile account/inbox layouts, mobile navigation, and public access to the contact page. The local preview used synthetic responses and no production sign-in credentials. These images demonstrate layout only:
 

@@ -21,12 +21,27 @@ function submissionDate(value: string) {
   return Number.isNaN(date.getTime()) ? 'Date unavailable' : date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-function InboxContents() {
+function waitForRetry(signal: AbortSignal): Promise<void> {
+  return new Promise(resolve => {
+    const finish = () => {
+      clearTimeout(timer)
+      signal.removeEventListener('abort', finish)
+      resolve()
+    }
+    const timer = setTimeout(finish, 500)
+    signal.addEventListener('abort', finish, { once: true })
+    if (signal.aborted) finish()
+  })
+}
+
+function InboxContents({ userId }: { userId: string }) {
+  const { recheck } = useAuth()
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined])
   const [pageNumber, setPageNumber] = useState(0)
   const [attempt, setAttempt] = useState(0)
   const [page, setPage] = useState<Page>({ submissions: [], nextCursor: null })
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'denied'>('loading')
+  const [status, setStatus] = useState<'loading' | 'checking' | 'ready' | 'error' | 'denied'>('loading')
+  const busy = status === 'loading' || status === 'checking'
   const cursor = cursors[pageNumber]
   useEffect(() => {
     const controller = new AbortController()
@@ -36,10 +51,22 @@ function InboxContents() {
     void (async () => {
       try {
         const query = cursor === undefined ? '' : `?${new URLSearchParams({ cursor })}`
-        const response = await fetch(`/api/admin/submissions${query}`, {
+        const requestPage = () => fetch(`/api/admin/submissions${query}`, {
           credentials: 'same-origin', cache: 'no-store',
           signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
         })
+        let response = await requestPage()
+        if (controller.signal.aborted) return
+        if (response.status === 401 || response.status === 403) {
+          setStatus('checking')
+          const session = await recheck()
+          if (controller.signal.aborted || session?.status !== 'signed-in'
+            || session.user.id !== userId || !session.user.isAdmin) return
+          // Retry once only after the API reconfirms the same administrator.
+          await waitForRetry(controller.signal)
+          if (controller.signal.aborted) return
+          response = await requestPage()
+        }
         if (controller.signal.aborted) return
         if (response.status === 401 || response.status === 403) { setStatus('denied'); return }
         if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) throw new Error('Inbox unavailable')
@@ -50,7 +77,7 @@ function InboxContents() {
       }
     })()
     return () => controller.abort()
-  }, [cursor, attempt])
+  }, [cursor, attempt, recheck, userId])
 
   function refresh() {
     setPage({ submissions: [], nextCursor: null })
@@ -61,12 +88,13 @@ function InboxContents() {
   return <>
     <div className="inbox-toolbar">
       <p>Newest first · Up to 20 messages per page</p>
-      <button className="button button--secondary" onClick={refresh} disabled={status === 'loading'}>Refresh inbox</button>
+      <button className="button button--secondary" onClick={refresh} disabled={busy}>Refresh inbox</button>
     </div>
-    <div className="inbox-results" aria-busy={status === 'loading'}>
+    <div className="inbox-results" aria-busy={busy}>
       {status === 'loading' && <p className="inbox-state" role="status">Loading messages…</p>}
+      {status === 'checking' && <p className="inbox-state" role="status">Checking inbox access…</p>}
       {status === 'error' && <div className="inbox-state" role="alert"><h2>We couldn’t load this page</h2><p>Try again, or refresh the inbox to start from the newest messages.</p><button className="button button--primary" onClick={() => setAttempt(value => value + 1)}>Try again</button></div>}
-      {status === 'denied' && <div className="inbox-state" role="alert"><h2>Inbox access unavailable</h2><p>Your session expired or your account no longer has inbox access.</p><Link className="account-text-link" to="/account">Return to your account</Link></div>}
+      {status === 'denied' && <div className="inbox-state" role="alert"><h2>Inbox access unavailable</h2><p>You’re signed in, but we couldn’t confirm access to messages. Try again, or return to your account.</p><div className="account-actions"><button className="button button--primary" onClick={refresh}>Try again</button><Link className="account-text-link" to="/account">Return to your account</Link></div></div>}
       {status === 'ready' && page.submissions.length === 0 && <div className="inbox-state"><h2>{pageNumber === 0 && !page.nextCursor ? 'No messages yet' : 'No messages on this page'}</h2><p>{page.nextCursor ? 'Continue to the next page.' : 'New contact submissions will appear here.'}</p></div>}
       {status === 'ready' && page.submissions.map(item => <article className="inbox-card" key={item.id}>
         <div className="inbox-card__heading"><h2>{item.name}</h2><span className="inbox-badge">{item.status}</span></div>
@@ -75,7 +103,7 @@ function InboxContents() {
       </article>)}
     </div>
     {status !== 'denied' && <nav className="inbox-pagination" aria-label="Inbox pages">
-      <button className="button button--secondary" disabled={status === 'loading' || pageNumber === 0} onClick={() => setPageNumber(value => value - 1)}>Previous</button>
+      <button className="button button--secondary" disabled={busy || pageNumber === 0} onClick={() => setPageNumber(value => value - 1)}>Previous</button>
       <span aria-live="polite">Page {pageNumber + 1}</span>
       <button className="button button--secondary" disabled={status !== 'ready' || !page.nextCursor} onClick={() => {
         if (!page.nextCursor) return
@@ -97,6 +125,6 @@ export default function AdminInboxPage() {
     {auth.status === 'error' && <div className="inbox-state" role="alert"><p>We couldn’t check your account.</p><button className="button button--primary" onClick={auth.refresh}>Try again</button></div>}
     {auth.status === 'anonymous' && <div className="inbox-state"><h2>Sign in to continue</h2><p>This inbox is private.</p><a className="button button--primary" href={signInUrl}>Sign in with Microsoft</a></div>}
     {auth.status === 'signed-in' && !auth.user.isAdmin && <div className="inbox-state"><h2>This inbox is private</h2><p>Your account does not have access to submissions.</p><Link className="account-text-link" to="/account">Return to your account</Link></div>}
-    {auth.status === 'signed-in' && auth.user.isAdmin && <InboxContents key={auth.user.id} />}
+    {auth.status === 'signed-in' && auth.user.isAdmin && <InboxContents key={auth.user.id} userId={auth.user.id} />}
   </section>
 }
