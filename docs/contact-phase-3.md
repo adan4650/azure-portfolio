@@ -1,8 +1,8 @@
 # Phase 3 — optional sign-in and private inbox
 
-I am doing the Azure work myself. The public portfolio and contact form are deployed. On November 20, 2026, I chose SWA's built-in Microsoft sign-in so I can use a personal Microsoft account with my Gmail address. Personal sign-in and a production inbox read were observed, but Azure subsequently returned inconsistent custom roles for that same user. The current step is **deploy and verify the owner authorization repair** in [the repair runbook](inbox-owner-repair.md). The Function package is prepared; cloud deployment and the frontend release are pending. This document retains the original role-based setup as history.
+I am doing the Azure work myself. The public portfolio and contact form are deployed. On November 20, 2026, I chose SWA's built-in Microsoft sign-in so I can use a personal Microsoft account with my Gmail address. Azure subsequently returned inconsistent custom roles for that same user. The [owner authorization repair](inbox-owner-repair.md) is now deployed in both the Function and website. Three owner account checks, six inbox loads/refreshes, and anonymous/forged-header denial probes passed in production. This document retains the original role-based setup as history.
 
-The original custom registration reached my university's administrator-consent screen after enabling ID-token issuance. The website uses Microsoft's preconfigured provider instead of that university registration; it does not change the university's consent policy. In the repair, other Microsoft accounts can sign in, but only the exact website user ID configured on the Function can read submissions. GitHub sign-in is blocked. Live owner-configuration revocation and a second non-owner account still need verification.
+The original custom registration reached my university's administrator-consent screen after enabling ID-token issuance. The website uses Microsoft's preconfigured provider instead of that university registration; it does not change the university's consent policy. In the repair, other Microsoft accounts can sign in, but only the exact website user ID configured on the Function can read submissions. GitHub sign-in is blocked. The separate-account test was user-reported rather than independently verified; live owner-configuration revocation remains untested.
 
 ## What the code does
 
@@ -149,8 +149,8 @@ Use test messages and note UTC time, identity category, HTTP status, and whether
 | Anonymous contact form | Real verification followed by durable receipt | Phase 1 success screenshot observed; repeat after release |
 | Anonymous account/inbox APIs | Denied, no records | November 20: both returned `401` |
 | Personal Microsoft account | `200`, account details and sign-out visible | November 20: user screenshot confirmed sign-in and account API response |
-| Signed-in non-admin inbox | Denied, no records | Local tests pass; cloud pending |
-| My configured owner ID | Bounded newest-first pages despite custom-role changes | Repair tests pass; cloud verification pending |
+| Signed-in non-owner inbox | Denied, no records | Local tests pass; user reported completing the cloud test, distinct identity/result not independently verified |
+| My configured owner ID | Bounded newest-first pages despite custom-role changes | Local role-fluctuation tests pass; November 20: six production inbox loads/refreshes passed without another sign-in |
 | Owner setting changed or cleared | Further reads denied after setting propagation/restart | Local tests pass; cloud pending |
 | Direct Function request | Platform `401`/`403` | November 20: inbox returned `401`; contact `401` previously observed |
 | Forged principal through either hostname | Denied without records | November 20: inbox returned `401` through both SWA and the direct Function hostname |
@@ -189,7 +189,7 @@ Every probe must be denied with no submissions. A fabricated principal reaching 
 
 ## Local verification and recording evidence
 
-The owner repair passed 27 backend tests, 18 frontend tests, and the production build. Its package dependencies and compiled owner check were verified separately. It remains pending cloud deployment and live access tests. The earlier session-recovery experiment passed 28 frontend tests but was rolled back after worse production access was reported; no retry-based recovery is included in this repair.
+The owner repair passed 27 backend tests, 18 frontend tests, and the production build. Its package dependencies and compiled owner check were verified separately. Both releases are deployed; repeated owner reads and anonymous/forged-header denial probes passed. See the [repair runbook](inbox-owner-repair.md) for production evidence and remaining checks. The earlier session-recovery experiment passed 28 frontend tests but was rolled back after worse production access was reported; no retry-based recovery is included in this repair.
 
 On November 20, 2026, the built-in provider release passed 25 backend tests, 18 frontend tests, and the production build. [Live release probes](evidence/phase-3-personal-signin-release.json) confirmed public page access, contact validation, `401` responses from private endpoints and forged-principal probes, and the GitHub login entry point's `404`. The Microsoft redirect used Azure's shared identity service and `/common/oauth2/v2.0/authorize` with the platform registration. This verifies the start of login only; it does not verify personal account login, role assignment, storage reads, or revocation. No credentials, cookies, state, nonce, or message contents were recorded.
 

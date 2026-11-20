@@ -1,6 +1,6 @@
 # Inbox owner authorization repair
 
-**Status — November 20, 2026:** prepared and locally verified; Function deployment and frontend release pending. Do not treat the incident as resolved until the live checks below pass.
+**Status — November 20, 2026:** the Function package and website change are deployed. Three consecutive owner account checks and six inbox loads/refreshes passed without another sign-in. Anonymous requests and fabricated owner headers were denied through both hostnames. The user reported completing the separate-account test and requested moving on; independent verification with a distinct non-owner identity was not completed. Live owner-setting revocation remains untested.
 
 ## Why this change is needed
 
@@ -69,6 +69,16 @@ To revoke access, clear or change `INBOX_OWNER_USER_ID` on the Function. Setting
 
 If rolling back, restore the frontend `site_admin` route gates first and wait for that deployment to complete. Only then restore the previous role-based Function package (`portfolio-inbox-api-flex-route-fix-2026-11-19.zip`). This returns to the previous access model and its known reliability issue. Do not roll back only the Function while leaving broader frontend authentication gates in place.
 
+## Production verification
+
+The user configured the Function owner setting and deployed the package above; Cloud Shell reported success. The frontend release at commit `8ce38e03b7f04fbdf53b597d79c45d2721f1daaf` completed in [GitHub Actions run 44758301146](https://github.com/adan4650/azure-portfolio/actions/runs/44758301146), and production served `/assets/index-kqyFNUWx.js`.
+
+Between 14:55 and 15:00 UTC, three account checks returned `isAdmin: true` for the same owner. The inbox displayed the existing test record after its initial load, two refresh-button requests, a full page reload, account-to-inbox navigation, and switching browser tabs away and back. No additional sign-in was needed. This is a short live regression check, not a long-duration availability guarantee.
+
+Public pages returned `200`, invalid contact input returned `400`, and anonymous private requests returned `401`. Fabricated principal headers were denied through both SWA and the direct Function hostname, including a separate probe using the actual configured owner ID without cookies or tokens. Only sanitized results are retained; identifiers and message contents are omitted.
+
+[Sanitized production evidence](evidence/inbox-owner-release-2026-11-20.json) records the checks and their limits. The two InPrivate windows inspected during the attempted separate-account check still returned the configured owner identity, so those observations do not establish non-owner denial. The user subsequently reported having completed that test and asked to proceed. Automated tests separately cover non-owner denial, including a non-owner carrying `site_admin`.
+
 ## Verification completed locally
 
-27 backend tests, 18 frontend tests, and the production build passed. Backend coverage includes alternating custom roles for the same owner, a different user with `site_admin`, email collisions, malformed identities, missing configuration, configuration revocation, request-supplied setting spoofing, bounded storage queries, and contact validation. Package verification confirmed compiled owner authorization, production dependency resolution, required root files, portable archive paths, and absence of local settings and native modules. These checks do not establish the live Azure trust boundary; the production checks above remain required.
+27 backend tests, 18 frontend tests, and the production build passed. Backend coverage includes alternating custom roles for the same owner, a different user with `site_admin`, email collisions, malformed identities, missing configuration, configuration revocation, request-supplied setting spoofing, bounded storage queries, and contact validation. Package verification confirmed compiled owner authorization, production dependency resolution, required root files, portable archive paths, and absence of local settings and native modules. These checks complement the live checks above; they do not establish Azure setting-propagation or revocation timing.

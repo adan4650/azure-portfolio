@@ -1,0 +1,238 @@
+{
+  "ReleaseCommit": "8ce38e03b7f04fbdf53b597d79c45d2721f1daaf",
+  "Workflow": "https://github.com/adan4650/azure-portfolio/actions/runs/44758301146",
+  "WorkflowConclusion": "success",
+  "LiveAsset": "/assets/index-kqyFNUWx.js",
+  "FunctionPackageSha256": "47815E5454C3C57D94AED734074362369BD2066527175D34B99A6B21A1BDAC5B",
+  "FunctionDeployment": "User confirmed success; Cloud Shell success observed",
+  "Scope": "Short live regression and access-boundary checks. No credentials, account IDs, emails, cookies, tokens, or message contents retained.",
+  "BrowserChecks": {
+    "ownerAccountChecks": [
+      {
+        "at": "2026-11-20T14:55:53.524Z",
+        "isAdmin": true,
+        "sameUser": true
+      },
+      {
+        "at": "2026-11-20T14:56:02.872Z",
+        "isAdmin": true,
+        "sameUser": true
+      },
+      {
+        "at": "2026-11-20T14:56:10.717Z",
+        "isAdmin": true,
+        "sameUser": true
+      }
+    ],
+    "platformRoleObservation": {
+      "at": "2026-11-20T14:56:23.836Z",
+      "sameUser": true,
+      "roles": [
+        "site_admin",
+        "anonymous",
+        "authenticated"
+      ]
+    },
+    "inboxChecks": [
+      {
+        "at": "2026-11-20T14:58:33.626Z",
+        "action": "initial page load",
+        "messageVisible": true,
+        "accessUnavailable": false,
+        "evidence": "visible screenshot"
+      },
+      {
+        "at": "2026-11-20T14:58:40.012Z",
+        "action": "refresh inbox",
+        "messageVisible": true,
+        "accessUnavailable": false
+      },
+      {
+        "at": "2026-11-20T14:58:57.808Z",
+        "action": "full page reload",
+        "messageVisible": true,
+        "accessUnavailable": false,
+        "evidence": "accessibility tree"
+      },
+      {
+        "at": "2026-11-20T14:59:31.195Z",
+        "action": "account to inbox navigation",
+        "messageVisible": true,
+        "accessUnavailable": false
+      },
+      {
+        "at": "2026-11-20T15:00:04.119Z",
+        "action": "tab switch away and back",
+        "messageVisible": true,
+        "accessUnavailable": false
+      },
+      {
+        "at": "2026-11-20T15:00:26.306Z",
+        "action": "second inbox refresh",
+        "messageVisible": true,
+        "accessUnavailable": false
+      }
+    ],
+    "forgedOwnerHeaderChecks": [
+      {
+        "origin": "SWA",
+        "forgedIdentity": "configured-owner",
+        "status": 401,
+        "passed": true,
+        "at": "2026-11-20T14:57:40.136Z"
+      },
+      {
+        "origin": "Function",
+        "forgedIdentity": "configured-owner",
+        "status": 401,
+        "passed": true,
+        "at": "2026-11-20T14:57:40.488Z"
+      }
+    ]
+  },
+  "PublicChecks": {
+    "CheckedAtUtc": "2026-11-20T14:58:11.6409134Z",
+    "Commit": "8ce38e03b7f04fbdf53b597d79c45d2721f1daaf",
+    "Scope": "Public unauthenticated probes and synthetic forged principals only. No interactive sign-in, real messages, credentials, cookies, state, or nonce recorded.",
+    "Results": [
+      {
+        "Path": "/",
+        "Origin": "SWA",
+        "Forged": false,
+        "Status": 200,
+        "Expected": 200,
+        "CacheControl": "public, must-revalidate, max-age=30",
+        "Passed": true
+      },
+      {
+        "Path": "/videos",
+        "Origin": "SWA",
+        "Forged": false,
+        "Status": 200,
+        "Expected": 200,
+        "CacheControl": "public, must-revalidate, max-age=30",
+        "Passed": true
+      },
+      {
+        "Path": "/contact",
+        "Origin": "SWA",
+        "Forged": false,
+        "Status": 200,
+        "Expected": 200,
+        "CacheControl": "public, must-revalidate, max-age=30",
+        "Passed": true
+      },
+      {
+        "Path": "/account",
+        "Origin": "SWA",
+        "Forged": false,
+        "Status": 200,
+        "Expected": 200,
+        "CacheControl": "no-store",
+        "Passed": true
+      },
+      {
+        "Path": "/api/contact",
+        "Origin": "SWA",
+        "Forged": false,
+        "Status": 400,
+        "Expected": 400,
+        "CacheControl": "no-store",
+        "Passed": true
+      },
+      {
+        "Path": "/api/account",
+        "Origin": "SWA",
+        "Forged": false,
+        "Status": 401,
+        "Expected": 401,
+        "CacheControl": "no-store",
+        "Passed": true
+      },
+      {
+        "Path": "/api/admin/submissions",
+        "Origin": "SWA",
+        "Forged": false,
+        "Status": 401,
+        "Expected": 401,
+        "CacheControl": "no-store",
+        "Passed": true
+      },
+      {
+        "Path": "/admin",
+        "Origin": "SWA",
+        "Forged": false,
+        "Status": 401,
+        "Expected": 401,
+        "CacheControl": "no-store",
+        "Passed": true
+      },
+      {
+        "Path": "/api/admin/submissions",
+        "Origin": "SWA",
+        "Forged": true,
+        "Status": 401,
+        "Expected": 401,
+        "CacheControl": "no-store",
+        "Passed": true
+      },
+      {
+        "Path": "/api/admin/submissions",
+        "Origin": "Function",
+        "Forged": false,
+        "Status": 401,
+        "Expected": 401,
+        "CacheControl": "",
+        "Passed": true
+      },
+      {
+        "Path": "/api/admin/submissions",
+        "Origin": "Function",
+        "Forged": true,
+        "Status": 401,
+        "Expected": 401,
+        "CacheControl": "",
+        "Passed": true
+      },
+      {
+        "Path": "/.auth/login/github",
+        "Origin": "SWA",
+        "Forged": false,
+        "Status": 404,
+        "Expected": 404,
+        "CacheControl": "",
+        "Passed": true
+      }
+    ],
+    "AccountCopyVerified": true,
+    "BuiltInMicrosoftRedirectVerified": true,
+    "Redirects": [
+      {
+        "Host": "icy-stone-01026931e.4.azurestaticapps.net",
+        "Path": "/.auth/login/aad",
+        "Status": 302
+      },
+      {
+        "Host": "identity.4.azurestaticapps.net",
+        "Path": "/.redirect/aad",
+        "Status": 302
+      },
+      {
+        "Host": "identity.4.azurestaticapps.net",
+        "Path": "/.auth/login/aad",
+        "Status": 302
+      },
+      {
+        "Host": "login.microsoftonline.com",
+        "Path": "/common/oauth2/v2.0/authorize",
+        "UsesPlatformRegistration": true
+      }
+    ]
+  },
+  "SeparateAccountTest": {
+    "UserReportedComplete": true,
+    "IndependentlyVerified": false,
+    "Note": "Inspected InPrivate windows still identified the configured owner. User reported already testing a separate account and requested moving on."
+  },
+  "LiveOwnerSettingRevocationVerified": false
+}
