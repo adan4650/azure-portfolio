@@ -7,7 +7,10 @@ portfolio_group='azure-portfolio'
 portfolio_app='func-portfolio-contact'
 portfolio_identity='id-portfolio-api-deploy'
 portfolio_credential='github-main'
-portfolio_subject='repo:adan4650/azure-portfolio:ref:refs/heads/main'
+# Verified against this repository's actual GitHub OIDC assertion. Newer
+# repositories include immutable numeric IDs; names alone do not match.
+portfolio_subject='repo:adan4650@119706246/azure-portfolio@1448468046:ref:refs/heads/main'
+portfolio_legacy_subject='repo:adan4650/azure-portfolio:ref:refs/heads/main'
 
 # Resolve the existing app first. No resource creation if the app is unavailable.
 portfolio_app_id=$(az functionapp show --subscription "$portfolio_subscription" \
@@ -32,6 +35,11 @@ portfolio_existing_subject=$(az identity federated-credential list --subscriptio
   --query "[?name=='$portfolio_credential'].subject | [0]" --output tsv)
 if [[ -z "$portfolio_existing_subject" ]]; then
   az identity federated-credential create --subscription "$portfolio_subscription" \
+    --resource-group "$portfolio_group" --identity-name "$portfolio_identity" \
+    --name "$portfolio_credential" --issuer 'https://token.actions.githubusercontent.com' \
+    --subject "$portfolio_subject" --audiences 'api://AzureADTokenExchange' --output none
+elif [[ "$portfolio_existing_subject" == "$portfolio_legacy_subject" ]]; then
+  az identity federated-credential update --subscription "$portfolio_subscription" \
     --resource-group "$portfolio_group" --identity-name "$portfolio_identity" \
     --name "$portfolio_credential" --issuer 'https://token.actions.githubusercontent.com' \
     --subject "$portfolio_subject" --audiences 'api://AzureADTokenExchange' --output none
