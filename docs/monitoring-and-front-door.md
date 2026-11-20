@@ -25,7 +25,7 @@ requests
 
 The action group had one verified, enabled email receiver using the common alert schema. The portal's manual action-group test failed with a generic message. The CLI exposed `Conflict: Free subscription not supported`. Changing recipient settings did not solve that subscription restriction.
 
-To verify real alert delivery without breaking the API, a temporary severity-3 rule named `alert-portfolio-email-chec` matched successful `account` requests. The user received its fired notification at 19:08 UTC on November 20. This verifies query evaluation → alert → email delivery. It does **not** prove the permanent 5xx rule fired on a real server failure. Removal of the temporary rule was instructed but is not independently verified; confirm it is absent or disabled so successful account requests do not create ongoing notifications.
+To verify real alert delivery without breaking the API, a temporary severity-3 rule named `alert-portfolio-email-chec` matched successful `account` requests. The user received its fired notification at 19:08 UTC on November 20. This verifies query evaluation → alert → email delivery. It does **not** prove the permanent 5xx rule fired on a real server failure. On November 20, the user confirmed that the temporary rule was deleted. Cleanup is user-reported; no independent Azure resource inventory was performed. Keep the permanent `alert-portfolio-api-5xx` rule and `ag-portfolio-alerts` action group.
 
 The 5xx rule detects recorded server errors. It does not detect every browser/platform authorization error, an outage that emits no telemetry, or all storage failures. Some failures can occur before a request reaches the Function. Keep those limitations in the walkthrough. Monitor ingestion/retention cost and the existing spending budget.
 
@@ -45,7 +45,6 @@ The [separate Function deployment workflow](contact-phase-5.md) is deployed. Its
 
 ## Remaining closeout evidence
 
-- Confirm the temporary email-check rule was removed or disabled; keep the permanent 5xx rule and action group.
 - Test live owner-setting revocation and restoration separately from deployment, recording observed propagation. Local authorization tests already cover the fail-closed behavior; Azure propagation remains untested.
 - Complete the outstanding storage role audit and wrong-identity/Shared Key denial evidence without changing the working Function's permissions.
 - Choose/document contact-message retention and a deletion procedure; no automatic deletion policy has been enabled.
