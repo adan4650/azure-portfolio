@@ -63,24 +63,22 @@ I want visitors to be able to reach out without creating an account, while keepi
 
 I am doing the Azure setup myself, one phase at a time. [Phase 1: public form and linked Function App](docs/contact-phase-1.md) records the original setup. [Phase 3: sign-in and private inbox](docs/contact-phase-3.md) covers personal Microsoft sign-in and access tests. The form keeps the existing purple-and-yellow design. It includes server validation, a honeypot, server-verified Turnstile, and sending, validation, success, and retry states. Failed requests keep the draft on the current page. The API reports success only after storage confirms a write.
 
-This is the target architecture; dashed paths are later phases, not deployed infrastructure claims:
+This is the current application architecture. The dashed GitHub-to-Function path is the prepared deployment workflow, awaiting Azure identity setup and a verified production run. Front Door/WAF was attempted but blocked by the student subscription and is deferred; see the [monitoring and deployment evidence](docs/monitoring-and-front-door.md).
 
 ```mermaid
 flowchart LR
     Visitor[Public visitor] --> SWA[Static Web Apps Standard]
-    Visitor -. Future public hostname .-> FD[Front Door Standard and custom WAF]
-    FD -. Profile-specific origin restriction .-> SWA
     SWA -->|Linked API authentication| API[Standalone TypeScript Function App]
     API -->|Verify token, hostname, action| Turnstile[Cloudflare Turnstile]
     API -->|System-assigned identity and table-scoped RBAC| Table[Contact data account: ContactSubmissions]
     API --> Host[Separate Functions host storage]
-    Member[Optional signed-in visitor] -. Built-in Microsoft sign-in .-> Microsoft[Microsoft identity provider]
-    Microsoft -. User identity .-> SWA
-    SWA -. Authenticated website principal .-> API
-    OwnerSetting[Function owner user-ID setting] -. Exact match before inbox reads .-> API
-    API -. Safe telemetry .-> AI[Application Insights]
-    AI -.-> Logs[Log Analytics workspace]
-    FD -. Access and WAF logs .-> Logs
+    Member[Optional signed-in visitor] -->|Built-in Microsoft sign-in| Microsoft[Microsoft identity provider]
+    Microsoft -->|User identity| SWA
+    SWA -->|Authenticated website principal| API
+    OwnerSetting[Function owner user-ID setting] -->|Exact match before inbox reads| API
+    API -->|Safe telemetry| AI[Application Insights]
+    AI --> Alert[5xx log alert]
+    Alert --> ActionGroup[Email action group]
     GitHub[GitHub Actions] -->|Existing frontend workflow| SWA
     GitHub -. Separate Function deployment identity .-> API
 ```
@@ -89,11 +87,11 @@ The storage writer uses partition key `inbox` and a fixed-width reverse timestam
 
 **Current evidence — November 19, 2026:** Azure reported a successful Function deployment. An invalid request through SWA returned the API's `400 validation_failed`, while a direct call to the Function hostname returned `401`. The public form displayed a successful receipt in an InPrivate browser after Turnstile verification. The storage account setting showed Shared Key disabled, and role listings showed the Function's table-scoped contributor role and my separate reader role. These observations support the public submission path; they do not prove every access boundary. Independent entity inspection, broader RBAC audit, forged-header tests, and negative storage authorization tests still need recorded evidence.
 
-The initial phase 3 release passed 25 backend tests, 18 frontend tests, and the production frontend build locally. A session-recovery experiment was rolled back after worse production access was reported. The deployed owner authorization repair passes 27 backend tests, 18 frontend tests, and the build. Six production inbox loads/refreshes succeeded without another sign-in. The separate-account test was user-reported rather than independently verified; live owner-setting revocation remains untested. [Production evidence](docs/evidence/inbox-owner-release-2026-11-20.json) records the scope. [Desktop](docs/evidence/phase-3-inbox-desktop.jpg) and [mobile](docs/evidence/phase-3-inbox-mobile.jpg) previews use synthetic messages. Front Door, WAF, and the separate Function workflow remain later phases.
+The initial phase 3 release passed 25 backend tests, 18 frontend tests, and the production frontend build locally. A session-recovery experiment was rolled back after worse production access was reported. The deployed owner authorization repair passes 27 backend tests, 18 frontend tests, and the build. Six production inbox loads/refreshes succeeded without another sign-in. The separate-account test was user-reported rather than independently verified; live owner-setting revocation remains untested. [Production evidence](docs/evidence/inbox-owner-release-2026-11-20.json) records the scope. [Desktop](docs/evidence/phase-3-inbox-desktop.jpg) and [mobile](docs/evidence/phase-3-inbox-mobile.jpg) previews use synthetic messages. Monitoring and email delivery are now verified as described below. Front Door/WAF is deferred after a subscription rejection. The [separate Function workflow](docs/contact-phase-5.md) is prepared; its Azure setup and first production run remain to be verified.
 
 **Decisions and tradeoffs:** Windows Consumption was blocked by Y1 quota restrictions on my student subscription. I created `func-portfolio-contact` on Linux Flex Consumption in West US 2. The runtime account `stpfhost` is separate from `stpfcontact`, where Shared Key is disabled. The storage client defaults to managed identity. Local development explicitly selects my Azure CLI identity through `CONTACT_STORAGE_USE_AZURE_CLI=true` in the ignored local settings. The existing frontend pipeline remains, and the Function pipeline will be added separately. Browser drafts stay in memory instead of persisting contact details on a shared device. A network timeout can leave delivery uncertain, so retrying may create a duplicate. Durable idempotency is a production improvement.
 
-**Costs:** SWA is now on Standard. I track its recurring charge along with Functions execution, both storage accounts, monitoring ingestion/retention, and bandwidth. I will price Front Door Standard and its WAF rules against my remaining student credit before creating them, and decide whether to retain them after the demonstration. Budget alerts are notifications, not a hard spending cap. Current [SWA pricing](https://azure.microsoft.com/en-us/pricing/details/app-service/static/) and [Front Door pricing](https://azure.microsoft.com/en-us/pricing/details/frontdoor/) are the references; my actual subscription quote takes precedence.
+**Costs:** SWA is now on Standard. I track its recurring charge along with Functions execution, both storage accounts, monitoring ingestion/retention, and bandwidth. Front Door creation was rejected despite available student credit; the unused WAF policy was removed according to the user's cleanup report. Revisit subscription eligibility and the full quote before attempting that lab again. Budget alerts are notifications, not a hard spending cap. Current [SWA pricing](https://azure.microsoft.com/en-us/pricing/details/app-service/static/) and [Front Door pricing](https://azure.microsoft.com/en-us/pricing/details/frontdoor/) are the references; my actual subscription quote takes precedence.
 
 **Build note — November 8, 2026:** The first backend compile found a mismatch between Node and browser stream types. I narrowed the request interface to the reader methods the handler actually needs, then verified chunked and oversized bodies. Another decision was to make missing storage fail clearly instead of returning a success message for a discarded submission. The automated failure-path tests prove those local behaviors; Azure permissions still need live evidence.
 
@@ -107,7 +105,9 @@ The [November 20 live probes](docs/evidence/phase-3-personal-signin-release.json
 
 **Build note — HTTP routing:** The three-function listing initially hid a route problem: `/api/account` returned the expected `401`, but `/api/admin/submissions` returned `404`. The local Azure Functions runtime reproduced a reserved-route conflict. I corrected the trigger templates to contain their full `api/` path and cleared the global prefix. All public URLs remain the same. A new regression test and five [local runtime probes](docs/evidence/phase-3-runtime-routing.json) verify the correction. After redeployment, the live inbox endpoint returned `401 unauthorized` with `no-store`, confirming that unsigned requests reach the corrected handler and are denied. A later production screenshot showed a successful signed-in read.
 
-**Production improvements:** add durable idempotency, a documented retention/deletion policy, alerting with measured ingestion costs, a delivery/support process, and a tested restore strategy. Revisit separate writer/reader service identities if the backend grows. Complete live authorization, consent, session-revocation and origin tests before relying on the inbox. Record only test messages in walkthroughs; previously viewed data cannot be recalled from a recipient's device.
+**Build note — monitoring and subscription limits:** fresh Application Insights requests and the permanent `alert-portfolio-api-5xx` configuration were verified. A temporary rule on successful account requests generated a real email, verifying notification delivery without deliberately breaking the API. The built-in action-group test was rejected for the free subscription. Front Door then passed wizard validation but failed deployment with `Free Trial and Student account is forbidden for Azure Frontdoor resources`. The [evidence and closeout notes](docs/monitoring-and-front-door.md) distinguish verified behavior, reported cleanup, and remaining checks. The 5xx rule itself has not been exercised with a real 5xx incident.
+
+**Production improvements:** add durable idempotency, a documented retention/deletion policy, measured monitoring costs, a delivery/support process, and a tested restore strategy. Revisit separate writer/reader service identities if the backend grows. Complete the remaining live owner-setting revocation and negative storage-permission checks. Record only test messages in walkthroughs; previously viewed data cannot be recalled from a recipient's device.
 
 ### Document the work as it happens
 
