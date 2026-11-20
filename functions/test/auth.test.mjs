@@ -27,7 +27,7 @@ function dependencies(overrides = {}) {
 // These header fixtures test the handler, not Azure's linked-provider boundary.
 test('anonymous and malformed identities fail closed before storage', async () => {
   const identities = [undefined, '!!!', 'e30', encode(null), encode([]), encode('user'), 'a'.repeat(16385),
-    { ...member, identityProvider: 'github' }, { ...member, userId: '' }, { ...member, userDetails: {} },
+    { ...admin, identityProvider: 'github' }, { ...member, userId: '' }, { ...member, userDetails: {} },
     { ...member, userRoles: ['site_admin'] }, { ...member, userRoles: 'authenticated' }, { ...member, userRoles: ['authenticated', {}] }]
   for (const identity of identities) {
     const { calls, deps } = dependencies()
@@ -136,8 +136,5 @@ test('SWA enables built-in Microsoft sign-in while protecting private APIs and b
   assert.ok(config.navigationFallback.exclude.includes('/.auth/*'))
   assert.equal(config.responseOverrides?.['401'], undefined)
   assert.equal(config.auth, undefined)
-  for (const path of ['/.auth/login/github', '/.auth/login/github/', '/.auth/login/github/callback']) {
-    assert.equal(matching(path).statusCode, 404)
-    assert.equal(matching(path).headers['Cache-Control'], 'no-store')
-  }
+  assert.equal(matching('/.auth/login/github').statusCode, 404)
 })

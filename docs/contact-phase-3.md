@@ -40,7 +40,7 @@ My goal is for my account to be the only human with inbox access. Assign `site_a
 
 Open [Microsoft account](https://account.microsoft.com/) privately and try my Gmail address. If it already identifies a Microsoft account, use that account. Otherwise, choose **Create an account**, use my existing Gmail address, and complete Microsoft's verification. This is Microsoft authentication using Gmail as the username, not Google authentication. My Google password is not a Microsoft sign-in credential. See [Microsoft's account guidance](https://support.microsoft.com/en-us/accounts-billing/manage/link-your-google-account-and-microsoft-account).
 
-The frontend release removes the custom `auth` registration from `staticwebapp.config.json`. SWA then uses its [preconfigured Microsoft provider](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-authorization#prerequisites). Explicit routes block `/.auth/login/github` and its callback paths because built-in providers otherwise include GitHub. The Microsoft sign-in URL stays `/.auth/login/aad`. No Google OAuth registration or new Azure subscription is needed for this website sign-in choice.
+The frontend release removes the custom `auth` registration from `staticwebapp.config.json`. SWA then uses its [preconfigured Microsoft provider](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-authorization#prerequisites). An explicit route blocks `/.auth/login/github` because built-in providers otherwise include GitHub. The Function also rejects principals from providers other than `aad`, even if they contain `site_admin`. The Microsoft sign-in URL stays `/.auth/login/aad`. No Google OAuth registration or new Azure subscription is needed for this website sign-in choice.
 
 The old SWA settings `AZURE_CLIENT_ID` and `OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID` are no longer referenced by the website configuration. The `portfolio-web-signin` registration and `id-portfolio-signin` identity are not prerequisites. After personal sign-in and role tests pass, review dependencies and remove those unused settings, identity attachment, federation, and registration manually if they are dedicated to this project. No Azure cleanup has been performed by this code release.
 
@@ -97,7 +97,7 @@ curl --silent --show-error --include \
 
 Review and commit the phase 3 source, tests, documentation, and `public/staticwebapp.config.json`, then push through the existing frontend workflow. Keep `VITE_TURNSTILE_SITE_KEY` in the GitHub repository variable. Keep `api_location` empty, because the separate Function is already linked.
 
-Verify the successful GitHub Actions run before opening the production site in a new private window. Check `/`, `/#projects`, `/videos`, and `/contact` while signed out. Submit only a test message. `/account` must show the Microsoft sign-in button without the old organization restriction. An unsigned request to either protected API must be denied, not receive contact records or a `200` HTML fallback. `/.auth/login/github` and `/.auth/login/github/callback` must return `404`; Microsoft sign-in must start the built-in provider flow.
+Verify the successful GitHub Actions run before opening the production site in a new private window. Check `/`, `/#projects`, `/videos`, and `/contact` while signed out. Submit only a test message. `/account` must show the Microsoft sign-in button without the old organization restriction. An unsigned request to either protected API must be denied, not receive contact records or a `200` HTML fallback. `/.auth/login/github` must return `404`; Microsoft sign-in must start the built-in provider flow. Azure handles built-in authentication callbacks internally, so callback status codes alone do not prove successful sign-in or provider blocking.
 
 Do not copy local mock identities or the ignored `work/auth-preview.mjs` into deployed code. `pnpm dev` alone does not emulate Azure's authentication boundary; actual sign-in is tested on SWA.
 
@@ -130,13 +130,13 @@ Use test messages and note UTC time, identity category, HTTP status, and whether
 | Check | Expected | Evidence status |
 | --- | --- | --- |
 | Anonymous contact form | Real verification followed by durable receipt | Phase 1 success screenshot observed; repeat after release |
-| Anonymous account/inbox APIs | Denied, no records | Cloud test pending |
+| Anonymous account/inbox APIs | Denied, no records | November 20: both returned `401` |
 | Personal Microsoft account | `200`, account details and sign-out visible | Cloud test pending |
 | Signed-in non-admin inbox | Denied, no records | Local tests pass; cloud pending |
 | My explicitly assigned `site_admin` | Bounded newest-first pages | Local tests pass; cloud pending |
 | Role removed | Further reads denied after propagation | Local tests pass; cloud pending |
-| Direct Function request | Platform `401`/`403` | Contact `401` observed; repeat for new endpoints |
-| Forged principal through either hostname | Denied without records | Cloud test pending |
+| Direct Function request | Platform `401`/`403` | November 20: inbox returned `401`; contact `401` previously observed |
+| Forged principal through either hostname | Denied without records | November 20: inbox returned `401` through both SWA and the direct Function hostname |
 | Wrong storage identity / Shared Key | Storage denies access | Cloud test pending |
 | Correct Function identity | Contact write and admin read work | Public receipt observed; admin read pending |
 
@@ -171,6 +171,8 @@ curl --silent --show-error --include \
 Every probe must be denied with no submissions. A fabricated principal reaching the direct Function handler is a failed boundary test, even if some later check returns an error. Fix linked authentication before using the inbox. Keep Shared Key disabled on `stpfcontact`; do not use a connection string to work around a permission failure. Direct and inherited storage data roles still need a separate audit.
 
 ## Local verification and recording evidence
+
+On November 20, 2026, the built-in provider release passed 25 backend tests, 18 frontend tests, and the production build. [Live release probes](evidence/phase-3-personal-signin-release.json) confirmed public page access, contact validation, `401` responses from private endpoints and forged-principal probes, and the GitHub login entry point's `404`. The Microsoft redirect used Azure's shared identity service and `/common/oauth2/v2.0/authorize` with the platform registration. This verifies the start of login only; it does not verify personal account login, role assignment, storage reads, or revocation. No credentials, cookies, state, nonce, or message contents were recorded.
 
 On November 19, 2026, 25 backend tests and 18 frontend tests passed. Both production builds passed. The added route regression test fails with the old registration and passes with the correction. Automated tests use injected dependencies and synthetic identities; they do not establish the Azure platform trust boundary.
 

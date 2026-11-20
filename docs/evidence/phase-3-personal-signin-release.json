@@ -1,0 +1,139 @@
+{
+  "CheckedAtUtc": "2026-11-20T12:06:08.1864600Z",
+  "Commit": "ca7b3e9338ce159e76279ad5ed71e9866919c432",
+  "Scope": "Public unauthenticated probes and synthetic forged principals only. No interactive sign-in, real messages, credentials, cookies, state, or nonce recorded.",
+  "Results": [
+    {
+      "Path": "/",
+      "Origin": "SWA",
+      "Forged": false,
+      "Status": 200,
+      "Expected": 200,
+      "CacheControl": "public, must-revalidate, max-age=30",
+      "Passed": true
+    },
+    {
+      "Path": "/videos",
+      "Origin": "SWA",
+      "Forged": false,
+      "Status": 200,
+      "Expected": 200,
+      "CacheControl": "public, must-revalidate, max-age=30",
+      "Passed": true
+    },
+    {
+      "Path": "/contact",
+      "Origin": "SWA",
+      "Forged": false,
+      "Status": 200,
+      "Expected": 200,
+      "CacheControl": "public, must-revalidate, max-age=30",
+      "Passed": true
+    },
+    {
+      "Path": "/account",
+      "Origin": "SWA",
+      "Forged": false,
+      "Status": 200,
+      "Expected": 200,
+      "CacheControl": "no-store",
+      "Passed": true
+    },
+    {
+      "Path": "/api/contact",
+      "Origin": "SWA",
+      "Forged": false,
+      "Status": 400,
+      "Expected": 400,
+      "CacheControl": "no-store",
+      "Passed": true
+    },
+    {
+      "Path": "/api/account",
+      "Origin": "SWA",
+      "Forged": false,
+      "Status": 401,
+      "Expected": 401,
+      "CacheControl": "no-store",
+      "Passed": true
+    },
+    {
+      "Path": "/api/admin/submissions",
+      "Origin": "SWA",
+      "Forged": false,
+      "Status": 401,
+      "Expected": 401,
+      "CacheControl": "no-store",
+      "Passed": true
+    },
+    {
+      "Path": "/admin",
+      "Origin": "SWA",
+      "Forged": false,
+      "Status": 401,
+      "Expected": 401,
+      "CacheControl": "no-store",
+      "Passed": true
+    },
+    {
+      "Path": "/api/admin/submissions",
+      "Origin": "SWA",
+      "Forged": true,
+      "Status": 401,
+      "Expected": 401,
+      "CacheControl": "no-store",
+      "Passed": true
+    },
+    {
+      "Path": "/api/admin/submissions",
+      "Origin": "Function",
+      "Forged": false,
+      "Status": 401,
+      "Expected": 401,
+      "CacheControl": "",
+      "Passed": true
+    },
+    {
+      "Path": "/api/admin/submissions",
+      "Origin": "Function",
+      "Forged": true,
+      "Status": 401,
+      "Expected": 401,
+      "CacheControl": "",
+      "Passed": true
+    },
+    {
+      "Path": "/.auth/login/github",
+      "Origin": "SWA",
+      "Forged": false,
+      "Status": 404,
+      "Expected": 404,
+      "CacheControl": "",
+      "Passed": true
+    }
+  ],
+  "AccountCopyVerified": true,
+  "BuiltInMicrosoftRedirectVerified": true,
+  "Redirects": [
+    {
+      "Host": "icy-stone-01026931e.4.azurestaticapps.net",
+      "Path": "/.auth/login/aad",
+      "Status": 302
+    },
+    {
+      "Host": "identity.4.azurestaticapps.net",
+      "Path": "/.redirect/aad",
+      "Status": 302
+    },
+    {
+      "Host": "identity.4.azurestaticapps.net",
+      "Path": "/.auth/login/aad",
+      "Status": 302
+    },
+    {
+      "Host": "login.microsoftonline.com",
+      "Path": "/common/oauth2/v2.0/authorize",
+      "UsesPlatformRegistration": true
+    }
+  ]
+}
