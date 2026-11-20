@@ -25,12 +25,13 @@ app.http('contact', {
 
 app.http('account', {
   route: 'api/account', methods: ['GET'], authLevel: 'anonymous',
-  handler: request => handleAccount(request),
+  handler: request => handleAccount(request, process.env.INBOX_OWNER_USER_ID),
 })
 
 app.http('submissions', {
   route: 'api/admin/submissions', methods: ['GET'], authLevel: 'anonymous',
   handler: (request, context) => handleSubmissions(request, {
+    ownerUserId: process.env.INBOX_OWNER_USER_ID,
     list: cursor => listSubmissions(cursor),
     report: code => context.warn('inbox_failure', { code, invocationId: context.invocationId }),
   }),

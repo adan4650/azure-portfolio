@@ -7,6 +7,7 @@
     "TURNSTILE_SECRET_KEY": "",
     "TURNSTILE_HOSTNAMES": "localhost,127.0.0.1",
     "CONTACT_TABLE_ENDPOINT": "",
+    "INBOX_OWNER_USER_ID": "",
     "CONTACT_STORAGE_USE_AZURE_CLI": "true"
   }
 }

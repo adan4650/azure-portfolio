@@ -49,15 +49,34 @@ export function readPrincipal(headers: Pick<Headers, 'get'>): Principal | null {
   } catch { return null }
 }
 
-export function authorize(request: ProtectedRequest, role: 'authenticated' | 'site_admin'):
+export function isConfiguredOwnerId(ownerUserId: string | undefined): ownerUserId is string {
+  // One opaque SWA user ID, not an email address, wildcard, or list of users.
+  return typeof ownerUserId === 'string' && ownerUserId.length > 0 && ownerUserId.length <= 256
+    && !/[\s,@*]/.test(ownerUserId)
+}
+
+export function hasInboxAccess(principal: Principal, ownerUserId: string | undefined): boolean {
+  return isConfiguredOwnerId(ownerUserId) && principal.identityProvider === 'aad'
+    && principal.userRoles.includes('authenticated') && principal.userId === ownerUserId
+}
+
+export function authorize(request: ProtectedRequest):
   { principal: Principal; error?: never } | { principal?: never; error: ApiResult } {
   const principal = readPrincipal(request.headers)
   if (!principal) return { error: jsonReply(401, 'unauthorized') }
-  if (!principal.userRoles.includes(role)) return { error: jsonReply(403, 'forbidden') }
   if (request.method !== 'GET') {
     const error = jsonReply(405, 'method_not_allowed')
     error.headers.Allow = 'GET'
     return { error }
   }
   return { principal }
+}
+
+export function authorizeInbox(request: ProtectedRequest, ownerUserId: string | undefined):
+  { principal: Principal; error?: never } | { principal?: never; error: ApiResult } {
+  const auth = authorize(request)
+  if (auth.error) return auth
+  if (!isConfiguredOwnerId(ownerUserId)) return { error: jsonReply(503, 'temporarily_unavailable') }
+  if (!hasInboxAccess(auth.principal, ownerUserId)) return { error: jsonReply(403, 'forbidden') }
+  return auth
 }

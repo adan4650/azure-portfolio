@@ -6,8 +6,9 @@ import { handleSubmissions } from '../dist/inbox.js'
 import { listSubmissions } from '../dist/storage.js'
 
 const encode = value => Buffer.from(JSON.stringify(value)).toString('base64')
-const member = { identityProvider: 'aad', userId: 'test-user', userDetails: 'member@example.com', userRoles: ['anonymous', 'authenticated'] }
-const admin = { ...member, userRoles: [...member.userRoles, 'site_admin'] }
+const ownerUserId = 'test-owner'
+const member = { identityProvider: 'aad', userId: 'test-member', userDetails: 'member@example.com', userRoles: ['anonymous', 'authenticated'] }
+const admin = { ...member, userId: ownerUserId, userDetails: 'owner@example.com', userRoles: [...member.userRoles, 'site_admin'] }
 const cursor = encode({ nextPartitionKey: 'inbox', nextRowKey: '9999999999999_test' })
 const submission = { id: 'row-test', name: 'Test Visitor', email: 'visitor@example.com', message: 'TEST ONLY', submittedAt: '2026-11-19T20:00:00.000Z', status: 'new' }
 function request(principal, path = '/api/admin/submissions', method = 'GET') {
@@ -18,6 +19,7 @@ function request(principal, path = '/api/admin/submissions', method = 'GET') {
 function dependencies(overrides = {}) {
   const calls = { reads: [], reports: [] }
   return { calls, deps: {
+    ownerUserId,
     list: async token => { calls.reads.push(token); return { submissions: [submission], nextCursor: cursor } },
     report: code => calls.reports.push(code),
     ...overrides,
@@ -31,7 +33,7 @@ test('anonymous and malformed identities fail closed before storage', async () =
     { ...member, userRoles: ['site_admin'] }, { ...member, userRoles: 'authenticated' }, { ...member, userRoles: ['authenticated', {}] }]
   for (const identity of identities) {
     const { calls, deps } = dependencies()
-    assert.equal(handleAccount(request(identity, '/api/account')).status, 401)
+    assert.equal(handleAccount(request(identity, '/api/account'), ownerUserId).status, 401)
     const result = await handleSubmissions(request(identity), deps)
     assert.equal(result.status, 401)
     assert.equal(result.headers['Cache-Control'], 'no-store')
@@ -39,14 +41,22 @@ test('anonymous and malformed identities fail closed before storage', async () =
   }
 })
 
-test('members can read their account; only explicit site_admin enables the inbox', async () => {
-  assert.deepEqual(handleAccount(request(member, '/api/account')).jsonBody, {
+test('only the configured owner can read the inbox, including when custom roles fluctuate', async () => {
+  assert.deepEqual(handleAccount(request(member, '/api/account'), ownerUserId).jsonBody, {
     code: 'account', user: { id: member.userId, details: member.userDetails, isAdmin: false },
   })
-  assert.equal(handleAccount(request(admin, '/api/account')).jsonBody.user.isAdmin, true)
-  for (const roles of [member.userRoles, [...member.userRoles, 'owner'], [...member.userRoles, 'Site_Admin']]) {
+  for (const roles of [admin.userRoles, member.userRoles, admin.userRoles, member.userRoles]) {
+    const principal = { ...admin, userRoles: roles }
+    assert.equal(handleAccount(request(principal, '/api/account'), ownerUserId).jsonBody.user.isAdmin, true)
     const { calls, deps } = dependencies()
-    const result = await handleSubmissions(request({ ...member, userRoles: roles }, '/api/admin/submissions?cursor=bad'), deps)
+    assert.equal((await handleSubmissions(request(principal), deps)).status, 200)
+    assert.equal(calls.reads.length, 1)
+  }
+  for (const principal of [member, { ...member, userRoles: admin.userRoles }, { ...member, userDetails: admin.userDetails },
+    { ...member, userId: ownerUserId.toUpperCase() }, { ...member, userRoles: [...member.userRoles, 'owner'] }]) {
+    const { calls, deps } = dependencies()
+    assert.equal(handleAccount(request(principal, '/api/account'), ownerUserId).jsonBody.user.isAdmin, false)
+    const result = await handleSubmissions(request(principal, '/api/admin/submissions?cursor=bad'), deps)
     assert.equal(result.status, 403)
     assert.equal(result.jsonBody.code, 'forbidden')
     assert.deepEqual(calls.reads, [])
@@ -72,11 +82,31 @@ test('malformed, oversized, duplicate and filter-like queries never reach storag
   }
 })
 
-test('role revocation is rechecked on every request before a data read', async () => {
+test('owner configuration changes revoke access before the next data read', async () => {
   const { calls, deps } = dependencies()
   assert.equal((await handleSubmissions(request(admin), deps)).status, 200)
-  assert.equal((await handleSubmissions(request(member), deps)).status, 403)
+  deps.ownerUserId = 'replacement-owner'
+  assert.equal((await handleSubmissions(request(admin), deps)).status, 403)
+  assert.equal(handleAccount(request(admin), deps.ownerUserId).jsonBody.user.isAdmin, false)
   assert.equal(calls.reads.length, 1)
+})
+
+test('missing or malformed owner configuration fails closed even for a site_admin principal', async () => {
+  for (const configuredId of [undefined, '', ' ', '*', 'test-owner,test-member', 'owner@example.com', ' test-owner', 'x'.repeat(257)]) {
+    const { calls, deps } = dependencies({ ownerUserId: configuredId })
+    assert.equal(handleAccount(request(admin), configuredId).jsonBody.user.isAdmin, false)
+    assert.equal((await handleSubmissions(request(admin), deps)).status, 503)
+    assert.deepEqual(calls.reads, [])
+  }
+})
+
+test('request-supplied owner settings and roles cannot change the configured owner', async () => {
+  const { calls, deps } = dependencies()
+  const req = request({ ...member, userRoles: admin.userRoles }, '/api/admin/submissions?INBOX_OWNER_USER_ID=test-member')
+  req.headers.set('INBOX_OWNER_USER_ID', member.userId)
+  req.headers.set('x-owner-user-id', member.userId)
+  assert.equal((await handleSubmissions(req, deps)).status, 403)
+  assert.deepEqual(calls.reads, [])
 })
 
 test('unsupported methods cannot trigger a query', async () => {
@@ -121,12 +151,12 @@ test('an empty storage page preserves continuation; completion ends paging', asy
   assert.deepEqual(await listSubmissions(undefined, client({ done: true })), { submissions: [], nextCursor: null })
 })
 
-test('SWA enables built-in Microsoft sign-in while protecting private APIs and blocking GitHub', () => {
+test('SWA requires authentication before private APIs; the Function enforces owner access', () => {
   const config = JSON.parse(readFileSync(new URL('../../public/staticwebapp.config.json', import.meta.url)))
   const matching = path => config.routes.find(rule => rule.route.endsWith('*') ? path.startsWith(rule.route.slice(0, -1)) : path === rule.route)
   assert.deepEqual(matching('/api/account').allowedRoles, ['authenticated'])
-  assert.deepEqual(matching('/api/admin/submissions').allowedRoles, ['site_admin'])
-  assert.deepEqual(matching('/admin').allowedRoles, ['site_admin'])
+  assert.deepEqual(matching('/api/admin/submissions').allowedRoles, ['authenticated'])
+  assert.deepEqual(matching('/admin').allowedRoles, ['authenticated'])
   for (const path of ['/', '/videos', '/contact', '/account', '/api/contact', '/.auth/login/aad', '/.auth/login/aad/callback']) {
     assert.equal(matching(path)?.allowedRoles, undefined)
     assert.equal(matching(path)?.statusCode, undefined)

@@ -1,16 +1,16 @@
 # Phase 3 — optional sign-in and private inbox
 
-I am doing the Azure work myself. The account and inbox code is deployed; the public portfolio and contact form remain public. On November 20, 2026, I chose SWA's built-in Microsoft sign-in so I can use a personal Microsoft account with my Gmail address. This replaces the original university-tenant restriction. Personal sign-in, the assigned `site_admin` role, and a production inbox read have now been observed. The current step is **resolve intermittent access denials and finish the access-control tests**.
+I am doing the Azure work myself. The public portfolio and contact form are deployed. On November 20, 2026, I chose SWA's built-in Microsoft sign-in so I can use a personal Microsoft account with my Gmail address. Personal sign-in and a production inbox read were observed, but Azure subsequently returned inconsistent custom roles for that same user. The current step is **deploy and verify the owner authorization repair** in [the repair runbook](inbox-owner-repair.md). The Function package is prepared; cloud deployment and the frontend release are pending. This document retains the original role-based setup as history.
 
-The original custom registration reached my university's administrator-consent screen after enabling ID-token issuance. The new setup uses Microsoft's preconfigured provider instead of that university registration; it does not change the university's consent policy. Other Microsoft accounts can sign in, but only my explicitly assigned `site_admin` account should read submissions. GitHub sign-in is blocked. Live role revocation and a second non-admin account still need verification.
+The original custom registration reached my university's administrator-consent screen after enabling ID-token issuance. The website uses Microsoft's preconfigured provider instead of that university registration; it does not change the university's consent policy. In the repair, other Microsoft accounts can sign in, but only the exact website user ID configured on the Function can read submissions. GitHub sign-in is blocked. Live owner-configuration revocation and a second non-owner account still need verification.
 
 ## What the code does
 
 | Code | Responsibility |
 | --- | --- |
-| `functions/src/auth.ts` | Validates the SWA principal and checks the required role before a protected handler runs |
+| `functions/src/auth.ts` | Validates the SWA principal and matches the configured owner before an inbox read |
 | `functions/src/account.ts` | Returns the authenticated user's account summary |
-| `functions/src/inbox.ts` | Requires `site_admin`, validates the cursor, and returns a bounded page |
+| `functions/src/inbox.ts` | Requires the configured owner, validates the cursor, and returns a bounded page |
 | `functions/src/storage.ts` | Uses the Function's managed identity and a fixed table/partition query |
 | `public/staticwebapp.config.json` | Uses built-in Microsoft sign-in, blocks GitHub sign-in, protects API/admin routes, and disables caching on personalized routes |
 | `src/auth/AuthContext.tsx` | Loads the account, obtains an optional display name, and rechecks the session when returning to the page |
@@ -19,14 +19,15 @@ The original custom registration reached my university's administrator-consent s
 
 The header is trusted only because **Azure Static Web Apps (Linked)** authentication remains enabled on the Function App. Base64 decoding is not authentication. The Function's `authLevel: 'anonymous'` means it does not require a Function key; it does not replace the platform authentication boundary. Keep **Require authentication** and the HTTP **401** response on the Function App. Do not add another provider there to fix website sign-in.
 
-The API checks `authenticated` for `/api/account` and `site_admin` for `/api/admin/submissions`. It never derives admin access from an email address, query parameter, storage role, or browser state. The inbox renders message text without interpreting HTML. Browser data stays in memory; API, account, admin, and authentication routes use `Cache-Control: no-store`.
+The repair checks an authenticated Microsoft principal for `/api/account` and also requires an exact `INBOX_OWNER_USER_ID` match for `/api/admin/submissions`. SWA requires authentication before forwarding either API request. The Function makes the final owner decision on every read; `site_admin` alone cannot grant access. It never derives admin access from an email address, query parameter, storage role, or browser state. The inbox renders message text without interpreting HTML. Browser data stays in memory; API, account, admin, and authentication routes use `Cache-Control: no-store`.
 
 ## The identities are separate
 
 | Identity or permission | Job | Does not grant |
 | --- | --- | --- |
 | My personal Microsoft account | Identifies the website user; Gmail can be its username | Automatic inbox access or Azure resource permissions |
-| SWA `site_admin` role | Lets the assigned website user request the private inbox | Azure resource or Table Storage permissions |
+| Function `INBOX_OWNER_USER_ID` setting | Names the one authenticated website identity permitted to read the inbox | Azure resource or Table Storage permissions |
+| SWA `site_admin` role | Original inbox gate; replaced by the configured owner check in the repair | Access to the repaired inbox by itself |
 | Function system-assigned identity | Reads/writes contact entities using table-scoped Storage Table Data Contributor | Website membership or sign-in privileges |
 | `id-portfolio-signin` user-assigned identity | Belongs to the previous custom sign-in setup; no longer referenced by the website configuration | Contact table access; it has no storage role |
 | My Azure user with Storage Table Data Reader | Allows my CLI identity to inspect this table directly | The website's `site_admin` role |
@@ -34,7 +35,11 @@ The API checks `authenticated` for `/api/account` and `site_admin` for `/api/adm
 
 The existing frontend workflow uses a deployment token. A separate federated identity for Function deployment is planned for phase 5. Deployment privileges are still powerful: someone who can replace backend code can change what the app does with its runtime permissions.
 
-My goal is for my account to be the only human with inbox access. Assign `site_admin` only to my account and audit direct/inherited storage roles separately. The Function necessarily reads the table. Subscription or directory administrators may be able to grant themselves access; a table-scoped assignment does not remove their administrative authority.
+My goal is for my account to be the only human with inbox access. Configure only my verified website user ID on the Function and audit direct/inherited storage roles separately. The Function necessarily reads the table. Administrators who can change Function settings or code may change this access policy; a table-scoped storage assignment does not remove their administrative authority.
+
+## Original setup history (sections 1–6)
+
+The sections below record the original role-based deployment. Use [the owner repair runbook](inbox-owner-repair.md) for current deployment, access assignment, and revocation. Removing a SWA role no longer revokes inbox access after the owner repair is deployed; change or clear the Function's owner setting instead.
 
 ## 1. Prepare my personal Microsoft account
 
@@ -119,9 +124,13 @@ The Function checks the role on every read, but it receives the platform's curre
 
 ### Intermittent inbox access
 
-On November 20, a user-provided response showed `isAdmin: true`, followed by a screenshot of a successful inbox read. Access was also reported to fail within seconds. The previous UI described every inbox `401` or `403` as session expiry, so that wording alone did not establish an expired login. The cause of the Azure denial has not been established.
+On November 20, a user-provided response showed `isAdmin: true`, followed by a screenshot of a successful inbox read. Access was also reported to fail within seconds. The UI describes every inbox `401` or `403` as session expiry, so that wording alone does not establish an expired login.
 
-An experimental frontend release coalesced browser events and retried a denied read after reconfirming the same administrator. Although its tests passed, the user reported worse access after deployment. The session code and tests were restored to the previous version. Further work needs the actual failing authorization response rather than another retry change. No server authorization rule or role assignment was changed.
+Live browser inspection subsequently reproduced inconsistent roles in Azure's own `/.auth/me` endpoint, independently of the React application. Azure Portal Role management showed the personal account assigned `site_admin`, including after refreshing the assignment list. After a full website sign-out and a new personal Microsoft sign-in, successive endpoint observations returned `site_admin` present at 13:46:16 UTC, absent at 13:46:21, and present again at 13:46:56. The same user ID and the `authenticated` role remained present. These are observation times on November 20, 2026, not server request timestamps. This demonstrates changing platform role information rather than an expired login; the underlying Azure cause remains unconfirmed.
+
+Reapplying `site_admin` with `az staticwebapp users update` completed successfully, but subsequent checks at 13:50:58, 13:51:12, and 13:54:16 UTC still lacked that role. The inbox API returned Azure's platform HTML `403` page. A fresh sign-in after the update still lacked the role at 13:56:01 UTC. Authentication and the same user ID persisted. The [owner repair](inbox-owner-repair.md) therefore moves the final access decision to a configured user-ID match in the Function, while retaining SWA authentication and the linked-origin boundary. It does not delete/reinvite the identity or add retries to conceal denials.
+
+An experimental frontend release coalesced browser events and retried a denied read after reconfirming the same administrator. Although its tests passed, the user reported worse access after deployment. The session code and tests were restored to the previous version. Live inspection then isolated the changing platform role information described above. No server authorization rule or role assignment was changed during that inspection.
 
 After deployment, hard-refresh `/account`, open the inbox, and check normal reading, a tab switch, and a direct `/admin` reload. If denials continue, privately inspect the failed `/api/admin/submissions` response: record only UTC time, HTTP status, whether it is platform HTML or application JSON, and a fixed error code. Do not share cookie headers, tokens, full network exports, personal identifiers, or messages. A successful local recovery test does not prove the Azure-side issue is resolved.
 
@@ -141,8 +150,8 @@ Use test messages and note UTC time, identity category, HTTP status, and whether
 | Anonymous account/inbox APIs | Denied, no records | November 20: both returned `401` |
 | Personal Microsoft account | `200`, account details and sign-out visible | November 20: user screenshot confirmed sign-in and account API response |
 | Signed-in non-admin inbox | Denied, no records | Local tests pass; cloud pending |
-| My explicitly assigned `site_admin` | Bounded newest-first pages | November 20: one stored test message displayed; repeated access is intermittently denied |
-| Role removed | Further reads denied after propagation | Local tests pass; cloud pending |
+| My configured owner ID | Bounded newest-first pages despite custom-role changes | Repair tests pass; cloud verification pending |
+| Owner setting changed or cleared | Further reads denied after setting propagation/restart | Local tests pass; cloud pending |
 | Direct Function request | Platform `401`/`403` | November 20: inbox returned `401`; contact `401` previously observed |
 | Forged principal through either hostname | Denied without records | November 20: inbox returned `401` through both SWA and the direct Function hostname |
 | Wrong storage identity / Shared Key | Storage denies access | Cloud test pending |
@@ -180,7 +189,7 @@ Every probe must be denied with no submissions. A fabricated principal reaching 
 
 ## Local verification and recording evidence
 
-The session-recovery experiment passed 28 frontend tests and the production build, but was subsequently rolled back after worse production access was reported. The restored version passes 18 frontend tests and its production build. Azure authorization rules and Function code are unchanged. User screenshots establish a successful personal login and inbox read, but do not establish session reliability or revocation behavior.
+The owner repair passed 27 backend tests, 18 frontend tests, and the production build. Its package dependencies and compiled owner check were verified separately. It remains pending cloud deployment and live access tests. The earlier session-recovery experiment passed 28 frontend tests but was rolled back after worse production access was reported; no retry-based recovery is included in this repair.
 
 On November 20, 2026, the built-in provider release passed 25 backend tests, 18 frontend tests, and the production build. [Live release probes](evidence/phase-3-personal-signin-release.json) confirmed public page access, contact validation, `401` responses from private endpoints and forged-principal probes, and the GitHub login entry point's `404`. The Microsoft redirect used Azure's shared identity service and `/common/oauth2/v2.0/authorize` with the platform registration. This verifies the start of login only; it does not verify personal account login, role assignment, storage reads, or revocation. No credentials, cookies, state, nonce, or message contents were recorded.
 

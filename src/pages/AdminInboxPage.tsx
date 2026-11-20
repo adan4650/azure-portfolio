@@ -66,7 +66,7 @@ function InboxContents() {
     <div className="inbox-results" aria-busy={status === 'loading'}>
       {status === 'loading' && <p className="inbox-state" role="status">Loading messages…</p>}
       {status === 'error' && <div className="inbox-state" role="alert"><h2>We couldn’t load this page</h2><p>Try again, or refresh the inbox to start from the newest messages.</p><button className="button button--primary" onClick={() => setAttempt(value => value + 1)}>Try again</button></div>}
-      {status === 'denied' && <div className="inbox-state" role="alert"><h2>Inbox access unavailable</h2><p>Your session expired or your account no longer has inbox access.</p><Link className="account-text-link" to="/account">Return to your account</Link></div>}
+      {status === 'denied' && <div className="inbox-state" role="alert"><h2>Inbox access unavailable</h2><p>We couldn’t authorize this request. Return to your account to check your access.</p><Link className="account-text-link" to="/account">Return to your account</Link></div>}
       {status === 'ready' && page.submissions.length === 0 && <div className="inbox-state"><h2>{pageNumber === 0 && !page.nextCursor ? 'No messages yet' : 'No messages on this page'}</h2><p>{page.nextCursor ? 'Continue to the next page.' : 'New contact submissions will appear here.'}</p></div>}
       {status === 'ready' && page.submissions.map(item => <article className="inbox-card" key={item.id}>
         <div className="inbox-card__heading"><h2>{item.name}</h2><span className="inbox-badge">{item.status}</span></div>

@@ -1,9 +1,9 @@
-import { authorize, decodeBase64Json, jsonReply, type ProtectedRequest, type ApiResult } from './auth.js'
+import { authorizeInbox, decodeBase64Json, jsonReply, type ProtectedRequest, type ApiResult } from './auth.js'
 
 export const INBOX_PAGE_SIZE = 20
 export type Submission = { id: string; name: string; email: string; message: string; submittedAt: string; status: string }
 export type SubmissionPage = { submissions: Submission[]; nextCursor: string | null }
-type Dependencies = { list: (cursor?: string) => Promise<SubmissionPage>; report: (code: 'submissions_unavailable') => void }
+type Dependencies = { ownerUserId: string | undefined; list: (cursor?: string) => Promise<SubmissionPage>; report: (code: 'submissions_unavailable') => void }
 
 // The cursor is opaque paging state, never a filter or an authorization token.
 export function validateCursor(cursor: string): void {
@@ -18,8 +18,9 @@ export function validateCursor(cursor: string): void {
 }
 
 export async function handleSubmissions(request: ProtectedRequest, deps: Dependencies): Promise<ApiResult> {
-  // Check the role before parsing paging state or touching storage.
-  const auth = authorize(request, 'site_admin')
+  // Only the explicitly configured owner can read data. A custom SWA role
+  // alone cannot grant access, and a missing custom role cannot revoke it.
+  const auth = authorizeInbox(request, deps.ownerUserId)
   if (auth.error) return auth.error
   let cursor: string | undefined
   try {

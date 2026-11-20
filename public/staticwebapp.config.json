@@ -6,9 +6,9 @@
   "routes": [
     { "route": "/.auth/login/github", "statusCode": 404, "headers": { "Cache-Control": "no-store" } },
     { "route": "/api/account", "allowedRoles": ["authenticated"], "headers": { "Cache-Control": "no-store" } },
-    { "route": "/api/admin/*", "allowedRoles": ["site_admin"], "headers": { "Cache-Control": "no-store" } },
-    { "route": "/admin", "allowedRoles": ["site_admin"], "rewrite": "/index.html", "headers": { "Cache-Control": "no-store" } },
-    { "route": "/admin/*", "allowedRoles": ["site_admin"], "rewrite": "/index.html", "headers": { "Cache-Control": "no-store" } },
+    { "route": "/api/admin/*", "allowedRoles": ["authenticated"], "headers": { "Cache-Control": "no-store" } },
+    { "route": "/admin", "allowedRoles": ["authenticated"], "rewrite": "/index.html", "headers": { "Cache-Control": "no-store" } },
+    { "route": "/admin/*", "allowedRoles": ["authenticated"], "rewrite": "/index.html", "headers": { "Cache-Control": "no-store" } },
     { "route": "/account", "rewrite": "/index.html", "headers": { "Cache-Control": "no-store" } },
     { "route": "/account/*", "rewrite": "/index.html", "headers": { "Cache-Control": "no-store" } },
     { "route": "/.auth/*", "headers": { "Cache-Control": "no-store" } },

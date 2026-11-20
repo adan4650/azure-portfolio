@@ -1,10 +1,10 @@
-import { authorize, jsonReply, type ProtectedRequest, type ApiResult } from './auth.js'
+import { authorize, hasInboxAccess, jsonReply, type ProtectedRequest, type ApiResult } from './auth.js'
 
-export function handleAccount(request: ProtectedRequest): ApiResult {
-  const auth = authorize(request, 'authenticated')
+export function handleAccount(request: ProtectedRequest, ownerUserId: string | undefined): ApiResult {
+  const auth = authorize(request)
   if (auth.error) return auth.error
-  const { userId, userDetails, userRoles } = auth.principal
+  const { userId, userDetails } = auth.principal
   return jsonReply(200, 'account', {
-    user: { id: userId, details: userDetails, isAdmin: userRoles.includes('site_admin') },
+    user: { id: userId, details: userDetails, isAdmin: hasInboxAccess(auth.principal, ownerUserId) },
   })
 }
