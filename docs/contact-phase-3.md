@@ -33,7 +33,7 @@ The repair checks an authenticated Microsoft principal for `/api/account` and al
 | My Azure user with Storage Table Data Reader | Allows my CLI identity to inspect this table directly | The website's `site_admin` role |
 | GitHub deployment identity | Publishes application code | A visitor session or intended data-reader role |
 
-The existing frontend workflow uses a deployment token. A separate federated identity for Function deployment is planned for phase 5. Deployment privileges are still powerful: someone who can replace backend code can change what the app does with its runtime permissions.
+The existing frontend workflow uses a deployment token. A separate federated identity now deploys the Function through the [phase 5 workflow](contact-phase-5.md), with its first production deployment verified on November 20, 2026. Deployment privileges are still powerful: someone who can replace backend code can change what the app does with its runtime permissions.
 
 My goal is for my account to be the only human with inbox access. Configure only my verified website user ID on the Function and audit direct/inherited storage roles separately. The Function necessarily reads the table. Administrators who can change Function settings or code may change this access policy; a table-scoped storage assignment does not remove their administrative authority.
 
@@ -203,4 +203,4 @@ Browser checks covered desktop and mobile account/inbox layouts, mobile navigati
 - [Desktop inbox with test messages](evidence/phase-3-inbox-desktop.jpg)
 - [Mobile inbox with test messages](evidence/phase-3-inbox-mobile.jpg)
 
-Application warning logs contain fixed failure codes and invocation IDs. No handler logs names, emails, bodies, auth headers, or raw storage exceptions. [Monitoring configuration and email delivery](monitoring-and-front-door.md) were subsequently verified. Front Door/WAF creation was blocked by the student subscription and is deferred. The [backend GitHub workflow](contact-phase-5.md) is prepared but still needs Azure setup and a verified production run; local tests do not establish those cloud deployment results.
+Application warning logs contain fixed failure codes and invocation IDs. No handler logs names, emails, bodies, auth headers, or raw storage exceptions. [Monitoring configuration and email delivery](monitoring-and-front-door.md) were subsequently verified. Front Door/WAF creation was blocked by the student subscription and is deferred. The [backend GitHub workflow](contact-phase-5.md) completed its first production deployment on November 20, 2026; release evidence records the successful cloud run, public/access-boundary probes, and user-reported inbox check separately from local tests.

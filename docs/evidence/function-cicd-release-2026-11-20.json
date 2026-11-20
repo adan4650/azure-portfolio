@@ -1,0 +1,110 @@
+{
+  "recordedAtUtc": "2026-11-20T22:11:32.817Z",
+  "scope": "First automated production Function deployment and limited live regression checks. No credentials, configured owner ID, email addresses, cookies, tokens, or message contents retained.",
+  "releaseCommit": "1d566c8fb3e62097d39bbf4f1ec9aba1d135c73d",
+  "workflow": {
+    "url": "https://github.com/adan4650/azure-portfolio/actions/runs/44823422547",
+    "attempt": 2,
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "Deploy production API",
+        "conclusion": "success",
+        "startedAtUtc": "2026-11-20T21:58:19Z",
+        "completedAtUtc": "2026-11-20T21:58:53Z"
+      },
+      {
+        "name": "Test and package API",
+        "conclusion": "success",
+        "startedAtUtc": "2026-11-20T21:47:35Z",
+        "completedAtUtc": "2026-11-20T21:48:02Z"
+      }
+    ]
+  },
+  "package": {
+    "file": "function-api.zip",
+    "bytes": 11564525,
+    "sha256": "ec1482e634a0f1a528a51755e7e0614f77699fadfbe51259cc512688549340af",
+    "artifactId": 14670734333,
+    "artifactRetentionDays": 14,
+    "extractionVerification": "Passed in Linux CI before deployment"
+  },
+  "deployment": {
+    "functionApp": "func-portfolio-contact",
+    "authentication": "GitHub OIDC with dedicated app-scoped deployment identity",
+    "method": "One Deploy",
+    "remoteBuild": false,
+    "reportedSuccessfulAtUtc": "2026-11-20T21:58:51.0552741Z"
+  },
+  "initialFailure": {
+    "step": "Sign in to Azure with OIDC",
+    "code": "AADSTS700213",
+    "cause": "Azure trusted the legacy name-only subject; GitHub issued a subject containing immutable owner/repository IDs.",
+    "resolution": "User updated the federated credential to the exact issued main-branch subject. Rerun attempt 2 succeeded without changing application code or enabling basic authentication."
+  },
+  "automatedChecks": {
+    "checkedAt": "2026-11-20T22:09:13.595Z",
+    "results": [
+      {
+        "name": "public homepage",
+        "status": 200,
+        "expected": 200,
+        "passed": true
+      },
+      {
+        "name": "anonymous account",
+        "status": 401,
+        "expected": 401,
+        "passed": true
+      },
+      {
+        "name": "anonymous inbox",
+        "status": 401,
+        "expected": 401,
+        "passed": true
+      },
+      {
+        "name": "forged principal via website",
+        "status": 401,
+        "expected": 401,
+        "passed": true
+      },
+      {
+        "name": "forged principal via Function origin",
+        "status": 401,
+        "expected": 401,
+        "passed": true
+      },
+      {
+        "name": "invalid contact",
+        "status": 400,
+        "expected": 400,
+        "passed": true,
+        "validationCodeMatches": true,
+        "checkedAt": "2026-11-20T22:10:14.131Z"
+      }
+    ],
+    "probeCorrection": "The original empty object was correctly rejected as verification_failed because the required empty honeypot field was absent. The corrected validation probe includes website set to an empty string; no application change was needed."
+  },
+  "ownerInboxRefresh": {
+    "result": "passed",
+    "evidence": "User confirmed messages load correctly after refreshing the signed-in inbox following deployment.",
+    "independentlyObserved": false
+  },
+  "freshPublicSubmission": {
+    "result": "pending",
+    "independentlyObserved": false
+  },
+  "validation": {
+    "backendTestsPassed": 27,
+    "frontendTestsPassed": 18,
+    "productionFrontendBuild": "passed",
+    "frontendProductionRun": "https://github.com/adan4650/azure-portfolio/actions/runs/44823422652"
+  },
+  "limits": [
+    "The separate-account test predates this deployment and was user-reported; it was not repeated.",
+    "Live owner-setting revocation/restoration and negative storage authorization checks remain unverified.",
+    "The permanent 5xx alert was not exercised by intentionally causing a server error."
+  ]
+}

@@ -43,7 +43,7 @@ The decision is to keep the student subscription and defer this lab. Available s
 
 ## Remaining closeout evidence
 
-- Finish the [separate Function deployment workflow](contact-phase-5.md) and record its first successful production run.
+- The [separate Function deployment workflow](contact-phase-5.md) is deployed: its first successful production run and endpoint checks are recorded in [release evidence](evidence/function-cicd-release-2026-11-20.json). Complete the fresh public submission check for this release.
 - Confirm the temporary email-check rule was removed or disabled; keep the permanent 5xx rule and action group.
 - Test live owner-setting revocation and restoration separately from deployment, recording observed propagation. Local authorization tests already cover the fail-closed behavior; Azure propagation remains untested.
 - Complete the outstanding storage role audit and wrong-identity/Shared Key denial evidence without changing the working Function's permissions.

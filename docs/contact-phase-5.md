@@ -1,6 +1,8 @@
 # Phase 5 — automated Function deployments
 
-**Status — November 20, 2026:** workflows merged in [PR #1](https://github.com/adan4650/azure-portfolio/pull/1). The [Linux API test/package run](https://github.com/adan4650/azure-portfolio/actions/runs/44822889946) and website preview workflow passed. The user ran the Azure identity setup and the GitHub repository variables were configured. The first production run failed at OIDC sign-in before deploying; correction of its subject trust and a successful deployment are still pending. The prior API deployment continues serving production.
+**Status — November 20, 2026:** deployed. Workflows merged in [PR #1](https://github.com/adan4650/azure-portfolio/pull/1). After correcting Azure's federated subject to match GitHub's immutable-ID claim, [production run 44823422547, attempt 2](https://github.com/adan4650/azure-portfolio/actions/runs/44823422547/attempts/2) successfully signed in with OIDC and deployed the tested package to the existing Function App. Six post-deployment public/access-boundary checks passed, and the user confirmed that messages still loaded after refreshing the signed-in inbox. A fresh public submission check remains pending. See [release evidence](evidence/function-cicd-release-2026-11-20.json).
+
+The deployed application commit is `1d566c8fb3e62097d39bbf4f1ec9aba1d135c73d`. Its Function ZIP SHA-256 is `ec1482e634a0f1a528a51755e7e0614f77699fadfbe51259cc512688549340af`. Azure reported successful One Deploy completion at 21:58:51 UTC. The later setup-script correction in `970d61e` changes no application code; rerunning the failed deployment reused the verified release artifact. The [frontend production workflow](https://github.com/adan4650/azure-portfolio/actions/runs/44823422652) also passed.
 
 ## Deployment design
 
