@@ -30,7 +30,7 @@ export default function LearningApproach() {
         </ol>
       </section>
       <section id="certifications" className="certification-path section-shell" aria-labelledby="certification-heading" data-reveal>
-        <div className="certification-path__heading"><p className="arcade-eyebrow">03 / After the projects</p><h2 id="certification-heading" ref={certificationHeading} tabIndex={-1}>Next level: certifications.</h2><p>Security+ earned. Azure certifications are the next goals after these builds.</p></div>
+        <div className="certification-path__heading"><p className="arcade-eyebrow">03 / Levels earned</p><h2 id="certification-heading" ref={certificationHeading} tabIndex={-1}>Progress you can verify.</h2><p>CompTIA Security+ and AZ-900 earned. AZ-104 is the next certification goal.</p></div>
         <ol className="certification-path__stages" aria-label="Certification goals">
           {certificationGoals.map((certification) => <li key={certification.title} className={certification.complete ? 'certification-path__stage--complete' : undefined}>
             <span className="certification-path__marker" aria-hidden="true">{certification.complete ? <CheckIcon /> : <span />}</span>

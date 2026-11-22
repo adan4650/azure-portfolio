@@ -1,8 +1,10 @@
-# Azure Portfolio · Introduction
+# Azure Portfolio & Contact System
 
-The website is the introduction to my Azure project journey: a place to showcase my skills, experience, project repositories, written notes, and recorded walkthroughs.
+My completed first cloud project: a React portfolio on Azure Static Web Apps, a validated contact API, Microsoft sign-in, and a private owner inbox backed by Azure Table Storage. The site also documents my experience, certifications, project decisions, and next steps in cloud engineering.
 
-[Watch the introduction](https://youtu.be/pgwBtNrTJS4).
+**Portfolio content updated November 22, 2026:** IT Analyst at Iron Bow Technologies; Digital Forensics Intern at Virginia State Police; CompTIA Security+ and Microsoft Azure Fundamentals (AZ-900) earned. AZ-104 remains planned. The Enterprise Service Desk API is the next project.
+
+[Watch the Azure Static Web Apps walkthrough](https://youtu.be/pgwBtNrTJS4).
 
 ## 1. The business problem it solves
 
@@ -10,33 +12,41 @@ A list of technologies does not show how I approach a problem. I need a place wh
 
 This portfolio brings that evidence together. The connected project path shows how each build leads into the next, while the video library gives me a place to share walkthroughs after I finish and document each project.
 
-### What I completed for the introduction
+### What I completed for Project 01
 
 - Activated an Azure for Students subscription and created the `azure-portfolio` resource group.
 - Set up a monthly budget and spending alerts.
 - Created this GitHub repository and configured my local Git setup.
 - Built the portfolio using React, TypeScript, Vite, Tailwind CSS, and GSAP.
 - Set up Azure Static Web Apps and configured its GitHub Actions build and deployment workflow.
-- Added the supplied introduction video to the first project and the shared video library.
+- Added the supplied Azure Static Web Apps video to the first project and the shared video library.
+- Built a validated contact form with server-verified Cloudflare Turnstile.
+- Stored submissions in Azure Table Storage through the Function's managed identity.
+- Added personal Microsoft sign-in and explicit server-side owner authorization for the private inbox.
+- Verified Application Insights telemetry, configured a 5xx alert, and verified notification email delivery with a temporary test rule.
+- Automated standalone Function deployments with GitHub Actions and OIDC, alongside the frontend deployment workflow.
 
-The infrastructure, monitoring, and Terraform CI/CD projects below are planned work. The website's existing deployment workflow is part of this introduction; it is separate from the future Terraform pipeline.
+The Azure Portfolio & Contact System is the completed first project. The Enterprise Service Desk API comes next, followed by infrastructure, monitoring, and Terraform CI/CD. The website's existing deployment workflow is separate from the future Terraform pipeline.
 
 ## 2. The architecture diagram
 
 ```mermaid
 flowchart LR
-    Developer[Local development in VS Code] --> Repository[GitHub: azure-portfolio]
-    Repository -->|Push to main or pull request targeting main| Workflow[GitHub Actions]
-    Workflow --> Install[pnpm install with frozen lockfile]
-    Install --> Build[TypeScript check and Vite build]
-    Build --> Output[Static files in dist]
-    Output --> Deploy[Azure Static Web Apps deployment action]
-    Deploy --> Hosting[Azure Static Web Apps]
-    Hosting --> Browser[Visitor's browser]
-    YouTube[YouTube introduction video] -->|Embedded player and direct link| Browser
+    Repository[GitHub: azure-portfolio] --> FrontendCI[Frontend tests and Vite build]
+    FrontendCI -->|dist deployment| Hosting[Azure Static Web Apps Standard]
+    Repository --> FunctionCI[Function tests and build]
+    FunctionCI -->|OIDC deployment| API[Azure Functions: contact, account, inbox]
+    Browser[Visitor or owner browser] --> Hosting
+    Hosting -->|Linked /api routes| API
+    Microsoft[Microsoft sign-in] -->|SWA authenticated principal| Hosting
+    API -->|Verify contact challenge| Turnstile[Cloudflare Turnstile]
+    API -->|Managed identity and table-scoped role| Storage[Azure Table Storage]
+    API --> Insights[Application Insights]
+    Insights --> Alert[5xx alert and email action group]
+    YouTube[Azure Static Web Apps walkthrough] -->|Embedded player| Browser
 ```
 
-The workflow in `.github/workflows/azure-static-web-apps-icy-stone-01026931e.yml` builds the site before handing the `dist/` output to the Azure deployment action. The action uses a deployment token stored in GitHub Actions secrets. A separate job closes the pull-request environment when the pull request closes.
+The workflow in `.github/workflows/azure-static-web-apps-icy-stone-01026931e.yml` tests and builds the site before handing the `dist/` output to the Azure deployment action. The action uses a deployment token stored in GitHub Actions secrets. A separate job closes the pull-request environment when the pull request closes. `.github/workflows/deploy-function-app.yml` tests, packages, and deploys the standalone Function App using OIDC; see the [Function delivery notes](docs/contact-phase-5.md).
 
 `public/staticwebapp.config.json` sends application routes such as `/videos` to `index.html`, with static assets, `/api/*`, and `/.auth/*` excluded from that fallback. Profile details, project content, and video references live in the source repository. The contact API in `functions/` is deployed separately. The public form, personal sign-in, and private inbox are deployed. A [server-side owner authorization repair](docs/inbox-owner-repair.md) now checks one explicitly configured website identity after reproducing inconsistent Azure custom roles. Repeated owner reads and anonymous/forged-header denial checks passed in production.
 
@@ -44,12 +54,12 @@ The workflow in `.github/workflows/azure-static-web-apps-icy-stone-01026931e.yml
 
 | Decision | Why it fits this project | Tradeoff |
 | --- | --- | --- |
-| Use Azure Static Web Apps for a static portfolio | It gives this introduction a focused Azure hosting setup without needing an application server. | Backend features would need a separate design if the site's requirements grow. |
+| Use Azure Static Web Apps with a linked standalone Function App | SWA hosts the frontend and Microsoft sign-in while the Function handles validation, storage, and owner authorization. | Standard hosting and the separate backend have their own costs, configuration, and release paths. |
 | Build with React, TypeScript, and Vite | Reusable components support the project path and video library; TypeScript catches type errors before deployment. | A client-rendered application adds JavaScript and needs route fallback configuration. |
 | Build in GitHub Actions, then deploy `dist/` | The repository records the build process, and the Azure action receives the output of that build. | Changes to the workflow and its deployment access need careful review. |
 | Keep content in `src/data/portfolio.ts` | One collection supplies project information and videos to the site, making updates straightforward while the portfolio is small. | Content changes require a code change and deployment. |
-| Embed the introduction from YouTube and provide a direct link | The site can showcase the recording without storing and serving the video file itself. | Playback depends on a third-party service and the video's availability. |
-| Keep the purple-and-yellow arcade theme | The player profile, connected path, and vault introduction reflect my gamer and tech interests. | Animation and media need accessibility and performance checks as the site evolves. |
+| Embed the walkthrough from YouTube and provide a direct link | The site can showcase the recording without storing and serving the video file itself. | Playback depends on a third-party service and the video's availability. |
+| Keep the purple-and-yellow arcade theme | The player profile and connected project path reflect my gamer and tech interests. | Animation and media need accessibility and performance checks as the site evolves. |
 
 ### Why I chose Table Storage for the contact form
 
@@ -57,11 +67,11 @@ I store each contact submission as one record with a name, email, message, and d
 
 The keys support the inbox's newest-first access pattern, and the Function uses managed identity instead of a storage key. General fields are not secondary indexes, so I would revisit this design if I needed full-text search or complex reporting.
 
-### Contact form and admin inbox — build in progress
+### Contact form and admin inbox — completed build
 
 I want visitors to be able to reach out without creating an account, while keeping their messages out of the public portfolio. I also want a private inbox that demonstrates the difference between signing in, getting permission to view messages, and giving an application permission to store them.
 
-I am doing the Azure setup myself, one phase at a time. [Phase 1: public form and linked Function App](docs/contact-phase-1.md) records the original setup. [Phase 3: sign-in and private inbox](docs/contact-phase-3.md) covers personal Microsoft sign-in and access tests. The form keeps the existing purple-and-yellow design. It includes server validation, a honeypot, server-verified Turnstile, and sending, validation, success, and retry states. Failed requests keep the draft on the current page. The API reports success only after storage confirms a write.
+I completed the Azure setup one phase at a time. [Phase 1: public form and linked Function App](docs/contact-phase-1.md) records the original setup. [Phase 3: sign-in and private inbox](docs/contact-phase-3.md) covers personal Microsoft sign-in and access tests. The form keeps the existing purple-and-yellow design. It includes server validation, a honeypot, server-verified Turnstile, and sending, validation, success, and retry states. Failed requests keep the draft on the current page. The API reports success only after storage confirms a write.
 
 This is the current application architecture. Both website and Function deployments run through GitHub Actions; the Function workflow uses a dedicated federated identity and a tested release package. Its [first automated production deployment](docs/contact-phase-5.md) succeeded on November 20, 2026. Front Door/WAF was attempted but blocked by the student subscription and is deferred; see the [monitoring and deployment evidence](docs/monitoring-and-front-door.md).
 
@@ -117,19 +127,21 @@ Start each repository with the [project README template](docs/project-readme-tem
 
 During each build, I will keep notes on the problem I encountered, what I tried, the result, the decision I made, and the evidence behind it. Those notes should include unsuccessful attempts and alternatives considered. I will record actual struggles as they happen, rather than present a polished result without the reasoning behind it.
 
-After completing the build and written documentation, I will record a walkthrough and add its video and repository link to this portfolio. The introduction video is already available; videos and repositories for the planned projects will be linked when they exist.
+After completing each build and its written documentation, I will record a walkthrough and add its video and repository link to this portfolio. The Azure Static Web Apps walkthrough is already available; videos and repositories for planned projects will be linked when they exist.
 
 ### The project sequence
 
-1. **Infrastructure and automation.** Build an Azure environment with Terraform: a hub-and-spoke virtual network, network security groups with least-privilege rules, a virtual machine in a private subnet, a storage account with a private endpoint, and remote Terraform state in Azure Blob Storage.
-2. **Monitoring and Alerting.** Connect Azure Monitor to a Log Analytics workspace. Write KQL detection rules for failed login attempts, suspicious access patterns, and configuration changes to privileged resources. Use a Logic App to send formatted alerts when rules fire.
-3. **CI/CD Pipeline.** Connect the Terraform repository to GitHub Actions, run Terraform validate and plan on every commit, require manual approval before apply, and protect `main` from direct commits. Explain the business value of reviewed, repeatable infrastructure changes.
+1. **Azure Portfolio & Contact System — completed.** Portfolio, validated contact form, private owner inbox, monitoring, and automated frontend and Function deployments.
+2. **Enterprise Service Desk API | DevSecOps Project — up next.** ASP.NET Core, PostgreSQL, synthetic tickets, role-based access, validation, assignment/status workflows, and audit logging. Review changes through pull requests; automate API tests, Docker builds, and vulnerability scans. Provision Azure Container Apps with Terraform and document deployment validation and troubleshooting.
+3. **Infrastructure and automation.** Build an Azure environment with Terraform: a hub-and-spoke virtual network, network security groups with least-privilege rules, a virtual machine in a private subnet, a storage account with a private endpoint, and remote Terraform state in Azure Blob Storage.
+4. **Monitoring and Alerting.** Connect Azure Monitor to a Log Analytics workspace. Write KQL detection rules for failed login attempts, suspicious access patterns, and configuration changes to privileged resources. Use a Logic App to send formatted alerts when rules fire.
+5. **CI/CD Pipeline.** Connect the Terraform repository to GitHub Actions, run Terraform validate and plan on every commit, require manual approval before apply, and protect `main` from direct commits. Explain the business value of reviewed, repeatable infrastructure changes.
 
 Each stage builds on the previous one: provision the environment, observe its behavior, then control how infrastructure changes reach it.
 
-### Certification goals after the projects
+### Certification roadmap
 
-CompTIA Security+ is earned. AZ-900 comes next, followed by AZ-104, after these builds.
+CompTIA Security+ and AZ-900 are earned. AZ-104 is the next certification goal.
 
 ### Run locally
 
@@ -144,6 +156,7 @@ Open the local address printed in the terminal. To run the TypeScript check and 
 
 ```sh
 pnpm typecheck
+pnpm test
 pnpm build
 ```
 
@@ -152,6 +165,17 @@ Production files are created in `dist/`. Preview that build with:
 ```sh
 pnpm preview
 ```
+
+The Vite preview serves the frontend. Azure sign-in and `/api/*` require the deployed SWA/Function integration; a local Vite server alone does not emulate them. Configure the public `VITE_TURNSTILE_SITE_KEY` in an ignored `.env.local` for a permitted test hostname when testing the form. Keep the Turnstile secret in backend settings. A preview without that configuration shows the setup/unavailable state.
+
+The backend is a separate package. Run its automated checks with:
+
+```sh
+pnpm --dir functions install --frozen-lockfile
+pnpm --dir functions test
+```
+
+For a local Function runtime, use Azure Functions Core Tools and the settings described in [phase 1](docs/contact-phase-1.md), starting from `functions/local.settings.example.json`. Production owner access and storage permissions need separate live verification.
 
 ### Update the portfolio
 
@@ -162,7 +186,7 @@ pnpm preview
 - `src/components/VaultIntro.tsx` and `vault-intro.css` retain the vault artwork, timing, and intro controls for possible reuse; the intro is currently disabled.
 - `public/assets/vault-intro-audio.mp3` contains the selected intro music excerpt.
 
-The homepage and Videos page use the same video collection, which supports YouTube videos, uploaded video files, and links to recordings. The site currently opens directly to the requested page, with no vault intro or replay button.
+The homepage and Videos page use the same video collection, which supports YouTube videos, uploaded video files, and links to recordings. The supplied recording is labeled to match its current YouTube title: Azure Static Web Apps, security, deployment, and monitoring. The site opens directly to the requested page, with no vault intro or replay button. The November 22 release updates the information while preserving the existing design; the project path accommodates the added Service Desk API stage.
 
 ## 4. What I would do differently at production scale
 

@@ -9,32 +9,35 @@ export const profile = {
 export const credentials = [
   { category: 'Education', title: 'Computer Science Degree' },
   { category: 'Certification', title: 'CompTIA Security+' },
+  { category: 'Certification', title: 'Microsoft Azure Fundamentals', detail: 'AZ-900 · Earned' },
   { category: 'Experience', title: 'IT Analyst', detail: 'Iron Bow Technologies' },
+  { category: 'Experience', title: 'Digital Forensics Intern', detail: 'Virginia State Police' },
   { category: 'Education', title: 'M.Eng. Computer Science', detail: 'Virginia Tech', status: 'In progress' },
 ]
 
 export const certificationGoals = [
   { title: 'Security+', description: 'CompTIA', status: 'Earned', complete: true },
-  { title: 'AZ-900', description: 'Azure Fundamentals', status: 'Planned', complete: false },
+  { title: 'AZ-900', description: 'Azure Fundamentals', status: 'Earned', complete: true },
   { title: 'AZ-104', description: 'Azure Administrator', status: 'Planned', complete: false },
 ]
 
 export const currentProject = {
   id: 'introduction',
   videoId: 'azure-portfolio-introduction',
-  title: 'Introduction: Website & Azure setup',
+  title: 'Azure Portfolio & Contact System',
   status: 'Completed',
-  description: 'My first step into the cloud: building this website and setting up the Azure web tools behind it.',
-  summary: 'I built this portfolio, set up Azure Static Web Apps, and configured a GitHub Actions workflow to build and deploy the site. This introduction establishes the foundation for the projects that follow.',
+  description: 'A deployed portfolio with a public contact form, Microsoft sign-in, and a private owner inbox.',
+  summary: 'I built the React and TypeScript frontend on Azure Static Web Apps, connected a standalone Azure Function to Table Storage through managed identity, and automated the frontend and Function deployments with GitHub Actions. This is the foundation for my next build: an Enterprise Service Desk API.',
   completed: [
-    'Built the portfolio website',
-    'Set up Azure for Students and a resource group',
-    'Configured a budget and spending alerts',
-    'Created the GitHub repository',
-    'Set up Azure Static Web Apps',
-    'Configured the GitHub Actions build and deployment workflow',
+    'Built and deployed the portfolio on Azure Static Web Apps',
+    'Added a validated contact form with server-verified Turnstile',
+    'Stored submissions in Azure Table Storage using managed identity',
+    'Added Microsoft sign-in and server-side owner authorization for the private inbox',
+    'Configured monitoring, a 5xx alert, and verified email delivery',
+    'Automated frontend and Function releases through GitHub Actions, using OIDC for the Function deployment',
+    'Set up Azure for Students, a resource group, a budget, and spending alerts',
   ],
-  upcoming: ['Infrastructure & Automation', 'Monitoring & Alerting', 'CI/CD Pipeline'],
+  upcoming: ['Enterprise Service Desk API', 'Infrastructure & Automation', 'Monitoring & Alerting', 'CI/CD Pipeline'],
 }
 
 type PlannedProject = {
@@ -55,12 +58,33 @@ type PlannedProject = {
 
 export const plannedProjects: PlannedProject[] = [
   {
+    id: 'enterprise-service-desk',
+    title: 'Enterprise Service Desk API | DevSecOps Project',
+    shortTitle: 'Service Desk API',
+    status: 'Up next',
+    description: 'Take the contact-system foundation into a complete support-ticket workflow.',
+    summary: 'I plan to build an ASP.NET Core REST API backed by PostgreSQL and synthetic support tickets, with role-based access, input validation, ticket assignment and status workflows, and audit logging.',
+    goals: [
+      'Build an ASP.NET Core REST API backed by PostgreSQL and synthetic support tickets',
+      'Add role-based access, input validation, ticket assignment, status workflows, and audit logging',
+      'Use Git and GitHub pull requests to review changes',
+      'Automate API tests, Docker image builds, and container vulnerability scans with GitHub Actions',
+      'Provision Azure Container Apps infrastructure with Terraform',
+      'Document deployment validation and troubleshooting',
+    ],
+    connection: 'The portfolio taught me how to accept a message, protect access, store data, and ship reliably. The next step is a service desk API with richer roles, ticket workflows, and a container delivery pipeline.',
+    icon: 'pipeline',
+    businessProblem: 'Support requests need consistent ownership, controlled access, traceable status changes, and a repeatable delivery process.',
+    documentationFocus: 'I’ll record API and data-model decisions, permission boundaries, container and infrastructure troubleshooting, and the evidence from deployment validation.',
+    productionQuestions: ['How should ticket permissions, audit retention, and database recovery evolve for a real service desk?', 'How should vulnerability findings, database migrations, and failed deployments be handled before production releases?'],
+  },
+  {
     id: 'infrastructure-automation',
     title: 'Infrastructure & Automation',
     shortTitle: 'Infrastructure',
-    status: 'Up next',
+    status: 'Planned',
     description: 'Build a repeatable Azure environment with Terraform.',
-    summary: 'I plan to move from setting up the website to defining an Azure environment in code, with connected networks, restricted access, and shared Terraform state.',
+    summary: 'I plan to extend the portfolio and Service Desk API work into an Azure environment defined in code, with connected networks, restricted access, and shared Terraform state.',
     goals: [
       'Provision the Azure environment with Terraform',
       'Build hub-and-spoke virtual networks',
@@ -69,7 +93,7 @@ export const plannedProjects: PlannedProject[] = [
       'Connect an Azure Storage account through a private endpoint',
       'Store remote Terraform state in Azure Blob Storage',
     ],
-    connection: 'The website introduces Azure. Next, build an environment that can be recreated from code.',
+    connection: 'After the Service Desk API and its container infrastructure, expand into a connected Azure environment that can be recreated from code.',
     icon: 'infrastructure',
     businessProblem: 'The goal is to reduce manual setup and inconsistent environments by making infrastructure repeatable, reviewable, and designed around limited access.',
     documentationFocus: 'I’ll record networking and private-access struggles, the alternatives I consider, and the evidence behind my topology, access rules, and Terraform state decisions.',
@@ -161,9 +185,9 @@ export type PortfolioVideo = {
 export const videos: PortfolioVideo[] = [
   {
     id: 'azure-portfolio-introduction',
-    title: 'Introducing my Azure portfolio',
-    description: 'An introduction to my portfolio and the start of my Azure learning journey.',
-    project: 'Project 01 · Introduction',
+    title: 'Azure Static Web Apps: security, deployment & monitoring',
+    description: 'My Azure Static Web Apps walkthrough, covering security, deployment, and monitoring.',
+    project: 'Project 01 · Azure Portfolio & Contact System',
     media: { type: 'youtube', videoId: 'pgwBtNrTJS4' },
   },
 ]

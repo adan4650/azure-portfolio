@@ -24,7 +24,7 @@
 .journey-map__line { stroke: #87619e; stroke-width: 2; stroke-dasharray: 5 5; vector-effect: non-scaling-stroke; }
 .journey-map__start-line { stroke: var(--yellow); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .journey-map__arrow { stroke: #c2a1d7; stroke-width: 2; vector-effect: non-scaling-stroke; }
-.journey-map__stages { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
+.journey-map__stages { position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
 .journey-stop { min-width: 0; }
 .journey-stop:nth-child(even) { padding-top: 70px; }
 .journey-stop__link { display: flex; align-items: center; flex-direction: column; width: 100%; gap: 17px; text-align: center; outline-offset: 7px; }

@@ -32,7 +32,7 @@ function StageGraphic({ icon }: { icon: JourneyIcon }) {
 }
 
 const stages = [
-  { id: currentProject.id, shortTitle: 'Website & Azure', status: currentProject.status, icon: 'website' as JourneyIcon },
+  { id: currentProject.id, shortTitle: 'Portfolio & Contact', status: currentProject.status, icon: 'website' as JourneyIcon },
   ...plannedProjects,
 ]
 
@@ -64,16 +64,16 @@ export default function ProjectJourney() {
         </div>
         <nav aria-label="Project learning path" className="journey-map__route">
           <svg className="journey-map__connections" viewBox="0 0 1000 180" preserveAspectRatio="none" fill="none" aria-hidden="true">
-            <path className="journey-map__line" d="M125 48H250V118H375H500V48H625H750V118H875" />
-            <path className="journey-map__start-line" d="M125 48H250V118H290" />
-            <path className="journey-map__arrow" d="M282 112l8 6-8 6 M532 42l8 6-8 6 M782 112l8 6-8 6" />
+            <path className="journey-map__line" d="M100 48H200V118H300H400V48H500H600V118H700H800V48H900" />
+            <path className="journey-map__start-line" d="M100 48H200V118H232" />
+            <path className="journey-map__arrow" d="M224 112l8 6-8 6 M424 42l8 6-8 6 M624 112l8 6-8 6 M824 42l8 6-8 6" />
           </svg>
           <ol className="journey-map__stages">
             {stages.map((stage, index) => (
               <li key={stage.id} className={`journey-stop ${index === 0 ? 'journey-stop--complete' : ''} ${selectedIndex === index ? 'journey-stop--selected' : ''}`}>
                 <Link to={`/#project-${stage.id}`} aria-current={selectedIndex === index ? 'step' : undefined} className="journey-stop__link">
                   <span className="journey-stop__graphic"><StageGraphic icon={stage.icon} /><span className="journey-stop__number">{String(index + 1).padStart(2, '0')}</span></span>
-                  <span className="journey-stop__label"><span className="journey-stop__status">{index === 0 && <CheckIcon />}{stage.status}</span><strong>{stage.shortTitle}</strong><span className="journey-stop__hint">{index === 0 ? 'Start with the introduction' : 'Explore the plan'} <ArrowRight /></span></span>
+                  <span className="journey-stop__label"><span className="journey-stop__status">{index === 0 && <CheckIcon />}{stage.status}</span><strong>{stage.shortTitle}</strong><span className="journey-stop__hint">{index === 0 ? 'Explore the completed build' : 'Explore the plan'} <ArrowRight /></span></span>
                 </Link>
               </li>
             ))}
@@ -83,7 +83,7 @@ export default function ProjectJourney() {
       </div>
 
       <article id={`project-${selected.id}`} className="journey-detail" aria-labelledby="project-heading" data-reveal>
-        <div className="journey-detail__topline"><span>Project {String(selectedIndex + 1).padStart(2, '0')} / {planned ? 'The road ahead' : 'Introduction'}</span><span className={`journey-detail__status ${!planned ? 'journey-detail__status--complete' : ''}`}>{!planned && <CheckIcon />}{selected.status}</span></div>
+        <div className="journey-detail__topline"><span>Project {String(selectedIndex + 1).padStart(2, '0')} / {planned ? 'The road ahead' : 'Completed build'}</span><span className={`journey-detail__status ${!planned ? 'journey-detail__status--complete' : ''}`}>{!planned && <CheckIcon />}{selected.status}</span></div>
         <div className="journey-detail__body">
           <div className="journey-detail__copy">
             <h3 id="project-heading" ref={detailHeading} tabIndex={-1}>{project.title}</h3>
