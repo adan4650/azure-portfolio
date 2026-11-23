@@ -47,21 +47,20 @@
 .journey-map__footer svg { width: 12px; height: 12px; color: #8f6ba7; }
 
 /* Animate only the decoration; labels, cards, and click targets stay still. */
-@media (prefers-reduced-motion: no-preference) {
-  .journey-stop__graphic > svg { animation: journey-icon-idle 4.8s ease-in-out infinite; }
-  .journey-stop:nth-child(2) .journey-stop__graphic > svg { animation-delay: -1.2s; }
-  .journey-stop:nth-child(3) .journey-stop__graphic > svg { animation-delay: -2.4s; }
-  .journey-stop:nth-child(4) .journey-stop__graphic > svg { animation-delay: -3.6s; }
-  .journey-map__line { animation: journey-route-flow 4s linear infinite; }
+/* Explicit Play overrides the global reduced-motion clamp only for these loops. */
+.arcade-home[data-idle-motion="on"] .journey-stop__graphic > svg { animation: journey-icon-idle 4.8s ease-in-out infinite !important; }
+.arcade-home[data-idle-motion="on"] .journey-stop:nth-child(2) .journey-stop__graphic > svg { animation-delay: -1.2s !important; }
+.arcade-home[data-idle-motion="on"] .journey-stop:nth-child(3) .journey-stop__graphic > svg { animation-delay: -2.4s !important; }
+.arcade-home[data-idle-motion="on"] .journey-stop:nth-child(4) .journey-stop__graphic > svg { animation-delay: -3.6s !important; }
+.arcade-home[data-idle-motion="on"] .journey-map__line { animation: journey-route-flow 4s linear infinite !important; }
 
-  @keyframes journey-icon-idle {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
-  }
+@keyframes journey-icon-idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
 
-  @keyframes journey-route-flow {
-    to { stroke-dashoffset: -20; }
-  }
+@keyframes journey-route-flow {
+  to { stroke-dashoffset: -20; }
 }
 
 .journey-detail { position: relative; margin-top: 34px; border: 1px solid #a078b85e; background: #20102c; scroll-margin-top: 30px; }
