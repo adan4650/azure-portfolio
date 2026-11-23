@@ -55,11 +55,6 @@
   box-shadow: 7px -7px 0 -2px currentColor
 }
 
-.arcade-hero__topline { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-.arcade-hero__topline .arcade-eyebrow { margin: 0; }
-.motion-toggle { min-height: 36px; padding: 8px 10px; border: 1px solid #a67aca65; background: #241030; color: #e2d0ec; font: 10px/1.5 var(--arcade-mono); }
-.motion-toggle:hover, .motion-toggle:focus-visible { border-color: var(--yellow); color: var(--yellow); }
-
 .arcade-hero h1 {
   margin: 0 0 22px;
   font-size: clamp(44px,4.65vw,70px);
@@ -330,7 +325,7 @@
   filter: drop-shadow(5px 5px 0 #44205e)
 }
 
-.arcade-home[data-idle-motion="on"] .player-profile__spark {
+.arcade-home .player-profile__spark {
   transform-origin: center;
   animation: profile-spark-twinkle 5.6s ease-in-out infinite !important;
 }

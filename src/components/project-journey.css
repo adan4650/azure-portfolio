@@ -47,12 +47,12 @@
 .journey-map__footer svg { width: 12px; height: 12px; color: #8f6ba7; }
 
 /* Animate only the decoration; labels, cards, and click targets stay still. */
-/* Explicit Play overrides the global reduced-motion clamp only for these loops. */
-.arcade-home[data-idle-motion="on"] .journey-stop__graphic > svg { animation: journey-icon-idle 4.8s ease-in-out infinite !important; }
-.arcade-home[data-idle-motion="on"] .journey-stop:nth-child(2) .journey-stop__graphic > svg { animation-delay: -1.2s !important; }
-.arcade-home[data-idle-motion="on"] .journey-stop:nth-child(3) .journey-stop__graphic > svg { animation-delay: -2.4s !important; }
-.arcade-home[data-idle-motion="on"] .journey-stop:nth-child(4) .journey-stop__graphic > svg { animation-delay: -3.6s !important; }
-.arcade-home[data-idle-motion="on"] .journey-map__line { animation: journey-route-flow 4s linear infinite !important; }
+/* These loops always run, including when the device requests reduced motion. */
+.arcade-home .journey-stop__graphic > svg { animation: journey-icon-idle 4.8s ease-in-out infinite !important; }
+.arcade-home .journey-stop:nth-child(2) .journey-stop__graphic > svg { animation-delay: -1.2s !important; }
+.arcade-home .journey-stop:nth-child(3) .journey-stop__graphic > svg { animation-delay: -2.4s !important; }
+.arcade-home .journey-stop:nth-child(4) .journey-stop__graphic > svg { animation-delay: -3.6s !important; }
+.arcade-home .journey-map__line { animation: journey-route-flow 4s linear infinite !important; }
 
 @keyframes journey-icon-idle {
   0%, 100% { transform: translateY(0); }

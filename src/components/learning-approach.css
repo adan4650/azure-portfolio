@@ -34,9 +34,9 @@
 .certification-path__stages h3 { margin: 7px 0 5px; font-size: clamp(17px, 1.8vw, 24px); font-weight: 750; letter-spacing: -.03em; line-height: 1.2; }
 .certification-path__stages p { padding-right: 10px; margin: 0; color: #bda6cc; font-size: 10px; line-height: 1.6; }
 
-.arcade-home[data-idle-motion="on"] .certification-path__marker svg { animation: certification-check-pulse 4.8s ease-in-out infinite !important; }
-.arcade-home[data-idle-motion="on"] .certification-path__stages li:nth-child(2) .certification-path__marker svg { animation-delay: -1.6s !important; }
-.arcade-home[data-idle-motion="on"] .certification-path__marker > span { animation: certification-next-pulse 4.8s ease-in-out -3.2s infinite !important; }
+.arcade-home .certification-path__marker svg { animation: certification-check-pulse 4.8s ease-in-out infinite !important; }
+.arcade-home .certification-path__stages li:nth-child(2) .certification-path__marker svg { animation-delay: -1.6s !important; }
+.arcade-home .certification-path__marker > span { animation: certification-next-pulse 4.8s ease-in-out -3.2s infinite !important; }
 
 @keyframes certification-check-pulse {
   0%, 65%, 100% { transform: scale(1); }

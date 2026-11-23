@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight, VideoIcon } from '../components/Icons'
 import ProjectJourney from '../components/ProjectJourney'
 import LearningApproach from '../components/LearningApproach'
-import useIdleMotion from '../hooks/useIdleMotion'
 import { credentials, profile } from '../data/portfolio'
 import './homepage.css'
 
@@ -20,15 +19,11 @@ function ArcadeController() {
 }
 
 export default function HomePage() {
-  const motion = useIdleMotion()
   return (
-    <div className="arcade-home" data-idle-motion={motion.enabled ? 'on' : 'off'}>
+    <div className="arcade-home">
       <section className="arcade-hero section-shell" aria-labelledby="welcome-heading">
         <div className="arcade-hero__copy" data-reveal>
-          <div className="arcade-hero__topline">
-            <p className="arcade-eyebrow"><span className="arcade-pixel" aria-hidden="true" /> Aspiring cloud engineer</p>
-            <button type="button" className="motion-toggle" onClick={motion.toggle}>{motion.enabled ? 'Pause animations' : 'Play animations'}</button>
-          </div>
+          <p className="arcade-eyebrow"><span className="arcade-pixel" aria-hidden="true" /> Aspiring cloud engineer</p>
           <h1 id="welcome-heading">In Pursuit of <span>Knowledge daily</span></h1>
           <p className="arcade-hero__description">I’m Andre, an IT Analyst building my path into cloud engineering. Here’s where I share my Azure projects, the decisions behind them, and what I learn along the way.</p>
           <ul className="arcade-credentials" aria-label="Education, certification, and experience">
