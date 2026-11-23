@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight, CheckIcon } from './Icons'
 import VideoCard from './VideoCard'
 import { currentProject, plannedProjects, profile, videos } from '../data/portfolio'
@@ -38,7 +38,8 @@ const stages = [
 
 export default function ProjectJourney() {
   const location = useLocation()
-  const selectedId = location.hash.replace('#project-', '')
+  const navigate = useNavigate()
+  const selectedId = location.hash === '#project-cicd-pipeline' ? 'enterprise-service-desk' : location.hash.replace('#project-', '')
   const matchedIndex = stages.findIndex((stage) => stage.id === selectedId)
   const selectedIndex = matchedIndex < 0 ? 0 : matchedIndex
   const selected = stages[selectedIndex]
@@ -46,6 +47,11 @@ export default function ProjectJourney() {
   const project = planned ?? currentProject
   const introductionVideo = videos.find((video) => video.id === currentProject.videoId)
   const detailHeading = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => {
+    // The standalone pipeline plan is now part of the Service Desk API.
+    if (location.hash === '#project-cicd-pipeline') navigate({ pathname: '/', search: location.search, hash: '#project-enterprise-service-desk' }, { replace: true })
+  }, [location.hash, location.search, navigate])
 
   useEffect(() => {
     if (location.hash.startsWith('#project-')) detailHeading.current?.focus({ preventScroll: true })
@@ -64,9 +70,9 @@ export default function ProjectJourney() {
         </div>
         <nav aria-label="Project learning path" className="journey-map__route">
           <svg className="journey-map__connections" viewBox="0 0 1000 180" preserveAspectRatio="none" fill="none" aria-hidden="true">
-            <path className="journey-map__line" d="M100 48H200V118H300H400V48H500H600V118H700H800V48H900" />
-            <path className="journey-map__start-line" d="M100 48H200V118H232" />
-            <path className="journey-map__arrow" d="M224 112l8 6-8 6 M424 42l8 6-8 6 M624 112l8 6-8 6 M824 42l8 6-8 6" />
+            <path className="journey-map__line" d="M125 48H250V118H375H500V48H625H750V118H875" />
+            <path className="journey-map__start-line" d="M125 48H250V118H290" />
+            <path className="journey-map__arrow" d="M282 112l8 6-8 6 M532 42l8 6-8 6 M782 112l8 6-8 6" />
           </svg>
           <ol className="journey-map__stages">
             {stages.map((stage, index) => (
@@ -79,7 +85,7 @@ export default function ProjectJourney() {
             ))}
           </ol>
         </nav>
-        <div className="journey-map__footer"><span>Showcase <ArrowRight /> Build <ArrowRight /> Monitor <ArrowRight /> Automate</span><span>Select a stage to explore</span></div>
+        <div className="journey-map__footer"><span>Publish <ArrowRight /> Develop <ArrowRight /> Secure <ArrowRight /> Recover</span><span>Select a stage to explore</span></div>
       </div>
 
       <article id={`project-${selected.id}`} className="journey-detail" aria-labelledby="project-heading" data-reveal>

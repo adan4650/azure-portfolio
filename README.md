@@ -26,7 +26,7 @@ This portfolio brings that evidence together. The connected project path shows h
 - Verified Application Insights telemetry, configured a 5xx alert, and verified notification email delivery with a temporary test rule.
 - Automated standalone Function deployments with GitHub Actions and OIDC, alongside the frontend deployment workflow.
 
-The Azure Portfolio & Contact System is the completed first project. The Enterprise Service Desk API comes next, followed by infrastructure, monitoring, and Terraform CI/CD. The website's existing deployment workflow is separate from the future Terraform pipeline.
+The roadmap has four projects total. The Azure Portfolio & Contact System is completed. The Enterprise Service Desk API comes next, followed by a secure network and governance lab, then a reliability and recovery lab. CI/CD and basic monitoring are integrated capabilities, rather than separate portfolio projects.
 
 ## 2. The architecture diagram
 
@@ -129,15 +129,22 @@ During each build, I will keep notes on the problem I encountered, what I tried,
 
 After completing each build and its written documentation, I will record a walkthrough and add its video and repository link to this portfolio. The Azure Static Web Apps walkthrough is already available; videos and repositories for planned projects will be linked when they exist.
 
-### The project sequence
+### The four-project roadmap
 
-1. **Azure Portfolio & Contact System — completed.** Portfolio, validated contact form, private owner inbox, monitoring, and automated frontend and Function deployments.
-2. **Enterprise Service Desk API | DevSecOps Project — up next.** ASP.NET Core, PostgreSQL, synthetic tickets, role-based access, validation, assignment/status workflows, and audit logging. Review changes through pull requests; automate API tests, Docker builds, and vulnerability scans. Provision Azure Container Apps with Terraform and document deployment validation and troubleshooting.
-3. **Infrastructure and automation.** Build an Azure environment with Terraform: a hub-and-spoke virtual network, network security groups with least-privilege rules, a virtual machine in a private subnet, a storage account with a private endpoint, and remote Terraform state in Azure Blob Storage.
-4. **Monitoring and Alerting.** Connect Azure Monitor to a Log Analytics workspace. Write KQL detection rules for failed login attempts, suspicious access patterns, and configuration changes to privileged resources. Use a Logic App to send formatted alerts when rules fire.
-5. **CI/CD Pipeline.** Connect the Terraform repository to GitHub Actions, run Terraform validate and plan on every commit, require manual approval before apply, and protect `main` from direct commits. Explain the business value of reviewed, repeatable infrastructure changes.
+| Project | Distinct capability | Evidence to show |
+| --- | --- | --- |
+| **1. Azure Portfolio & Contact System — completed** | Ship a working serverless service: frontend, API validation, identity, storage, basic monitoring, and automated releases. | Live portfolio, contact/inbox access checks, architecture, deployment history, and the recorded walkthrough. |
+| **2. Enterprise Service Desk API — up next** | Build and deliver a containerized application: ASP.NET Core, PostgreSQL, ticket workflows, application roles, audit logs, tests, and vulnerability scans. | Synthetic ticket scenarios, permission tests, API documentation, a reviewed pull request, and an automated Azure Container Apps release using Terraform and OIDC. Include remote state, reviewed plans, a deployment approval gate, and rollback instructions. |
+| **3. Secure Azure Network & Governance Lab — planned** | Operate the platform: hub-and-spoke networking, private endpoints and DNS, Linux administration, Azure RBAC, Azure Policy, and network troubleshooting. | A small single-subscription lab, Terraform, a network diagram, an allowed/denied access matrix, a blocked public-storage request, a policy-rejected deployment, and a diagnosed DNS or NSG fault. |
+| **4. Cloud Reliability & Recovery Lab — planned** | Diagnose and recover a service: KQL investigation, service-health targets, bounded load tests, incident response, database restore, and measured recovery. | A test copy of the Service Desk API, two incident rehearsals, one load-test report, a verified PostgreSQL restore, measured recovery time/data loss, runbooks, and a postmortem. |
 
-Each stage builds on the previous one: provision the environment, observe its behavior, then control how infrastructure changes reach it.
+The sequence is **publish → develop → secure → recover**. Projects 2–4 are plans, not completed experience. Each gets a focused repository and README with the architecture, decisions, commands, test results, costs, and cleanup steps.
+
+**Overlap removed:** the standalone CI/CD project is folded into the Service Desk API, building on the pipelines already running this portfolio. The basic monitoring project is replaced by measurable troubleshooting and recovery work; setting up another dashboard or email alert alone is not the fourth project's outcome. Terraform and monitoring remain tools used across the builds, while each project has a different problem and proof of success.
+
+**Keep the labs achievable:** project 3 is a small network/governance exercise, not a claim to have implemented a complete enterprise landing zone. Project 4 uses synthetic data and a separate test deployment. Define recovery-time (RTO) and acceptable-data-loss (RPO) targets before rehearsing recovery, then report actual results. Select the PostgreSQL backup/restore method for the chosen hosting option and verify restored data and application behavior. Document regional failover as a future improvement unless it is actually tested. Check student-subscription eligibility, resource quotas, and costs before provisioning; include teardown and keep always-on resources limited.
+
+The capability choices are informed by Microsoft's [Azure administrator skills](https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-104), [landing zone design areas](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/landing-zone/design-areas), and [reliability testing guidance](https://learn.microsoft.com/en-us/azure/well-architected/reliability/reliability-test). This portfolio is selected practical evidence, not a complete exam syllabus or a claim of production-scale experience.
 
 ### Certification roadmap
 
@@ -186,7 +193,7 @@ For a local Function runtime, use Azure Functions Core Tools and the settings de
 - `src/components/VaultIntro.tsx` and `vault-intro.css` retain the vault artwork, timing, and intro controls for possible reuse; the intro is currently disabled.
 - `public/assets/vault-intro-audio.mp3` contains the selected intro music excerpt.
 
-The homepage and Videos page use the same video collection, which supports YouTube videos, uploaded video files, and links to recordings. The supplied recording is labeled to match its current YouTube title: Azure Static Web Apps, security, deployment, and monitoring. The site opens directly to the requested page, with no vault intro or replay button. The November 22 release updates the information while preserving the existing design; the project path accommodates the added Service Desk API stage.
+The homepage and Videos page use the same video collection, which supports YouTube videos, uploaded video files, and links to recordings. The supplied recording is labeled to match its current YouTube title: Azure Static Web Apps, security, deployment, and monitoring. The site opens directly to the requested page, with no vault intro or replay button. The November 22 roadmap revision preserves the existing design with four project stages. Existing links to projects 3 and 4 still work; the retired CI/CD link redirects to the Service Desk API, where that work now belongs.
 
 ## 4. What I would do differently at production scale
 
