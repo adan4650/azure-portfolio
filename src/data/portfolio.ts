@@ -166,9 +166,9 @@ export type PortfolioVideo = {
 export const videos: PortfolioVideo[] = [
   {
     id: 'azure-portfolio-introduction',
-    title: 'Azure Static Web Apps: security, deployment & monitoring',
-    description: 'My Azure Static Web Apps walkthrough, covering security, deployment, and monitoring.',
+    title: 'My First Azure Project: Portfolio Website, Contact Form & Private Inbox',
+    description: 'A demo of my first Azure project, covering the portfolio, contact form, private inbox, deployment, troubleshooting, and what I would change for an enterprise system.',
     project: 'Project 01 · Azure Portfolio & Contact System',
-    media: { type: 'youtube', videoId: 'pgwBtNrTJS4' },
+    media: { type: 'youtube', videoId: 'YoOF7jYCME0' },
   },
 ]

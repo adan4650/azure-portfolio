@@ -4,7 +4,7 @@ My completed first cloud project: a React portfolio on Azure Static Web Apps, a 
 
 **Portfolio content updated November 22, 2026:** IT Analyst at Iron Bow Technologies; Digital Forensics Intern at Virginia State Police; CompTIA Security+ and Microsoft Azure Fundamentals (AZ-900) earned. AZ-104 remains planned. The Enterprise Service Desk API is the next project.
 
-[Watch the Azure Static Web Apps walkthrough](https://youtu.be/pgwBtNrTJS4).
+[Watch the Azure Portfolio & Contact System walkthrough](https://www.youtube.com/watch?v=YoOF7jYCME0).
 
 ## 1. The business problem it solves
 
