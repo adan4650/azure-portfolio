@@ -195,6 +195,8 @@ For a local Function runtime, use Azure Functions Core Tools and the settings de
 
 The homepage and Videos page use the same video collection, which supports YouTube videos, uploaded video files, and links to recordings. The supplied recording is labeled to match its current YouTube title: Azure Static Web Apps, security, deployment, and monitoring. The site opens directly to the requested page, with no vault intro or replay button. The November 22 roadmap revision preserves the existing design with four project stages. Existing links to projects 3 and 4 still work; the retired CI/CD link redirects to the Service Desk API, where that work now belongs.
 
+The project icons gently float along a flowing dashed route, the portrait's yellow sparkle twinkles, and certification markers pulse. These decorative CSS loops leave text and click targets stationary and run only when the visitor has not requested reduced motion. Their styles live in `project-journey.css`, `homepage.css`, and `learning-approach.css`.
+
 ## 4. What I would do differently at production scale
 
 These are proposed changes, not claims about the current setup. I would size the work to the service's users, availability needs, and budget.
